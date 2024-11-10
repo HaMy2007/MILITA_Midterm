@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".HomeActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Home"
+            android:fontFamily="@font/itim"
+            android:textSize="40sp"
+            android:layout_marginLeft="20dp"
+            android:textColor="@color/red_text"
+            android:layout_weight="1"/>
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/img_3"
+            android:layout_marginRight="20dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="20dp">
+
+        <Button
+            android:id="@+id/btnAdd"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:text="Add user"
+            android:fontFamily="@font/itim"
+            android:textColor="@color/white"
+            android:textSize="17sp"
+            android:layout_marginRight="30dp"
+            android:background="@drawable/radius_btn_2"/>
+
+        <Button
+            android:id="@+id/btnDelete"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:text="Delete user"
+            android:fontFamily="@font/itim"
+            android:textColor="@color/red_text"
+            android:textSize="17sp"
+            android:background="@drawable/radius_btn_1"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+        <CheckBox
+            android:id="@+id/chkCheckAll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/border"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="5dp"
+            android:src="@drawable/line2"
+            android:layout_margin="10dp"></ImageView>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="List of user"
+            android:fontFamily="@font/itim"
+            android:textColor="@color/red_text"
+            android:textSize="32sp"></TextView>
+    </LinearLayout>
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:src="@drawable/line"
+        android:layout_marginLeft="15dp"></ImageView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/userRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/pale_pink"/>
+</LinearLayout>
