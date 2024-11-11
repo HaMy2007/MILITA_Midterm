@@ -22,7 +22,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class UserProfileActivity extends AppCompatActivity {
     String avatarUrl;
-    Button btnSetting, btnLogout;
+    Button btnSetting, btnLogout, btnBack;
     CircleImageView avatar_user;
     TextView username, tv_name, tv_birthday, tv_email, tv_status, tv_phone;
     private FirebaseFirestore db;
@@ -39,6 +39,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
         btnSetting = findViewById(R.id.btnSetting);
         btnLogout = findViewById(R.id.btnLogout);
+        btnBack = findViewById(R.id.btnBack);
         avatar_user = findViewById(R.id.avatar_user);
         tv_birthday = findViewById(R.id.tv_birthday);
         tv_name = findViewById(R.id.tv_name);
@@ -52,6 +53,13 @@ public class UserProfileActivity extends AppCompatActivity {
         String userId = getIntent().getStringExtra("userId");
 
         loadUserProfile(userId);
+
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
 
         btnLogout.setOnClickListener(new View.OnClickListener() {
             @Override

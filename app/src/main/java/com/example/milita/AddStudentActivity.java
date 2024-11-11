@@ -1,11 +1,13 @@
 package com.example.milita;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -30,6 +32,8 @@ public class AddStudentActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private Button btnSave, btnCapture;
     private CircleImageView profileImageView;
+    private String selectedDate = "";
+    private int selectedYear, selectedMonth, selectedDay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +62,21 @@ public class AddStudentActivity extends AppCompatActivity {
 
         btnCapture.setOnClickListener(v -> showImagePickerDialog());
 
+        txtBirthday.setOnClickListener(v -> {
+            showDateDialog();
+        });
+
+    }
+
+    private void showDateDialog() {
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+            selectedYear = year;
+            selectedMonth = month;
+            selectedDay = dayOfMonth;
+            selectedDate = dayOfMonth + "/" + (month + 1) + "/" + year;
+            txtBirthday.setText(selectedDate);
+        }, selectedYear, selectedMonth, selectedDay);
+        datePickerDialog.show();
     }
 
     private void savestudentData(Bitmap profileImageBitmap) {

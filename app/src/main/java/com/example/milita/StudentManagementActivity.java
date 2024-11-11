@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -39,6 +40,7 @@ public class StudentManagementActivity extends AppCompatActivity {
     private CheckBox chkCheckAll;
     private FirebaseFirestore db;
     private EditText search_input;
+    private String userRole;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,9 +61,17 @@ public class StudentManagementActivity extends AppCompatActivity {
         studentList = new ArrayList<>();
         studentAdapter = new StudentAdapter(this, studentList);
         studentRecyclerView.setAdapter(studentAdapter);
-
+        //check quyền ng dùng
+        checkUserRole();
         // Lấy dữ liệu từ Firestore
         loadStudentDataFromFirestore();
+
+        if ("Employee".equals(userRole)) {
+            btnAdd.setVisibility(View.GONE);
+            btnDelete.setVisibility(View.GONE);
+            chkCheckAll.setVisibility(View.GONE);
+            Toast.makeText(this, "Employee role: View-only access", Toast.LENGTH_SHORT).show();
+        }
 
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -118,6 +128,20 @@ public class StudentManagementActivity extends AppCompatActivity {
                 filterStudentList(query);
             }
         });
+    }
+
+    private void checkUserRole() {
+        // Fetch the role of the current user from Firestore or another source
+        // Example:
+        db.collection("users").document(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        userRole = documentSnapshot.getString("role"); // Assuming 'role' is a field in Firestore
+                    } else {
+                        userRole = "Employee"; // Default to Employee if not specified
+                    }
+                });
     }
 
     private void loadStudentDataFromFirestore() {

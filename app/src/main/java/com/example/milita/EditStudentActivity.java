@@ -1,5 +1,6 @@
 package com.example.milita;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -26,6 +27,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,6 +43,8 @@ public class EditStudentActivity extends AppCompatActivity {
     TextView username;
     CircleImageView profile_image;
     EditText et_username, et_birthday, et_email, et_phone, et_status, et_class, et_faculty;
+    private String selectedDate = "";
+    private int selectedYear, selectedMonth, selectedDay;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +72,15 @@ public class EditStudentActivity extends AppCompatActivity {
 
         String userId = getIntent().getStringExtra("userId");
         loadUserProfile(userId);
+
+        Calendar calendar = Calendar.getInstance();
+        selectedYear = calendar.get(Calendar.YEAR);
+        selectedMonth = calendar.get(Calendar.MONTH);
+        selectedDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+        et_birthday.setOnClickListener(v -> {
+            showDateDialog();
+        });
 
         btnSave.setOnClickListener(v -> {
             profile_image.setDrawingCacheEnabled(true); // Bật cache
@@ -99,6 +112,17 @@ public class EditStudentActivity extends AppCompatActivity {
                     }
                 })
                 .show();
+    }
+
+    private void showDateDialog() {
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+            selectedYear = year;
+            selectedMonth = month;
+            selectedDay = dayOfMonth;
+            selectedDate = dayOfMonth + "/" + (month + 1) + "/" + year;
+            et_birthday.setText(selectedDate);
+        }, selectedYear, selectedMonth, selectedDay);
+        datePickerDialog.show();
     }
 
     @Override

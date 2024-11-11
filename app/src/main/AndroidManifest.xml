@@ -15,6 +15,18 @@
         android:theme="@style/Theme.MILITA"
         tools:targetApi="31">
         <activity
+            android:name=".AddCertificateActivity"
+            android:exported="false" />
+        <activity
+            android:name=".EditCertificateActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CertificateInfomationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CertificateManagementActivity"
+            android:exported="false" />
+        <activity
             android:name=".StudentProfileActivity"
             android:exported="false" />
         <activity

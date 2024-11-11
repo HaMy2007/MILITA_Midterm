@@ -1,13 +1,18 @@
 package com.example.milita;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -17,6 +22,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,10 +32,16 @@ public class AddUserActivity extends AppCompatActivity {
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private static final int REQUEST_PICK_IMAGE = 2;
     private Uri selectedImageUri;
-    private EditText txtUserName, txtBirthday, txtEmail, txtPhone, txtStatus;
+    private EditText txtUserName, txtBirthday, txtEmail, txtPhone;
     private FirebaseFirestore db;
-    private Button btnSave, btnCapture;
+    private Button btnSave, btnCapture, btnBack;
     private CircleImageView profileImageView;
+    private RadioGroup radioGroup;
+    private RadioButton rBtnNormal, rBtnLocked;
+    private String selectedOption = "", selectedRole = "";
+    private Spinner spinnerRole;
+    private String selectedDate = "";
+    private int selectedYear, selectedMonth, selectedDay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,20 +54,63 @@ public class AddUserActivity extends AppCompatActivity {
         txtBirthday = findViewById(R.id.txtBirthday);
         txtEmail = findViewById(R.id.txtEmail);
         txtPhone = findViewById(R.id.txtPhone);
-        txtStatus = findViewById(R.id.txtStatus);
         btnSave = findViewById(R.id.btnSave);
+        btnBack = findViewById(R.id.btnBack);
         profileImageView = findViewById(R.id.profile_image);
         btnCapture = findViewById(R.id.btnCapture);
+        radioGroup = findViewById(R.id.radioGroup);
+        rBtnNormal = findViewById(R.id.rBtnNormal);
+        rBtnLocked = findViewById(R.id.rBtnLocked);
+
+        spinnerRole = findViewById(R.id.spinnerRole);
+
+        Calendar calendar = Calendar.getInstance();
+        selectedYear = calendar.get(Calendar.YEAR);
+        selectedMonth = calendar.get(Calendar.MONTH);
+        selectedDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+        txtBirthday.setOnClickListener(v -> {
+            showDateDialog();
+        });
 
         btnSave.setOnClickListener(v -> {
+            selectedRole = spinnerRole.getSelectedItem().toString();
+
             profileImageView.setDrawingCacheEnabled(true); // Bật cache
             profileImageView.buildDrawingCache();
             Bitmap profileBitmap = profileImageView.getDrawingCache();
             saveUserData(profileBitmap);
         });
 
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
+
         btnCapture.setOnClickListener(v -> showImagePickerDialog());
 
+        radioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.rBtnNormal) {
+                selectedOption = "Normal";
+            } else if (checkedId == R.id.rBtnLocked) {
+                selectedOption = "Locked";
+            } else {
+                selectedOption = "";
+            }
+        });
+    }
+
+    private void showDateDialog() {
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+            selectedYear = year;
+            selectedMonth = month;
+            selectedDay = dayOfMonth;
+            selectedDate = dayOfMonth + "/" + (month + 1) + "/" + year;
+            txtBirthday.setText(selectedDate);
+        }, selectedYear, selectedMonth, selectedDay);
+        datePickerDialog.show();
     }
 
     private void saveUserData(Bitmap profileImageBitmap) {
@@ -63,7 +118,7 @@ public class AddUserActivity extends AppCompatActivity {
         String birthday = txtBirthday.getText().toString();
         String email = txtEmail.getText().toString();
         String phone = txtPhone.getText().toString();
-        String status = txtStatus.getText().toString();
+        String status = selectedOption;
 
         // Chuyển đổi ảnh đại diện thành chuỗi Base64
         String profileImageBase64 = encodeImageToBase64(profileImageBitmap);
@@ -75,6 +130,7 @@ public class AddUserActivity extends AppCompatActivity {
         user.put("email", email);
         user.put("phone", phone);
         user.put("status", status);
+        user.put("role", selectedRole);
         user.put("profileImageBase64", profileImageBase64); // Lưu chuỗi Base64 của ảnh đại diện
 
         // Thêm dữ liệu vào Firestore

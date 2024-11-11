@@ -1,5 +1,6 @@
 package com.example.milita;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -8,8 +9,11 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +29,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,10 +41,15 @@ public class EditUserActivity extends AppCompatActivity {
     private FirebaseStorage storage;
     private Uri selectedImageUri;
     private FirebaseFirestore db;
-    Button btnCapture, btnSave;
-    TextView username;
-    CircleImageView profile_image;
-    EditText et_username, et_birthday, et_email, et_phone, et_status;
+    private Button btnCapture, btnSave, btnBack;
+    private TextView username;
+    private CircleImageView profile_image;
+    private EditText et_username, et_birthday, et_email, et_phone, et_status;
+    private RadioGroup radioGroup;
+    private RadioButton rBtnNormal, rBtnLocked;
+    private String selectedOption;
+    private String selectedDate = "";
+    private int selectedYear, selectedMonth, selectedDay;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,17 +63,36 @@ public class EditUserActivity extends AppCompatActivity {
 
         btnCapture = findViewById(R.id.btnCapture);
         btnSave = findViewById(R.id.btnSave);
+        btnBack = findViewById(R.id.btnBack);
         username = findViewById(R.id.username);
         profile_image = findViewById(R.id.profile_image);
         et_username = findViewById(R.id.et_username);
         et_birthday = findViewById(R.id.et_birthday);
         et_email = findViewById(R.id.et_email);
         et_phone = findViewById(R.id.et_phone);
-        et_status = findViewById(R.id.et_status);
+        radioGroup = findViewById(R.id.radioGroup);
+        rBtnNormal = findViewById(R.id.rBtnNormal);
+        rBtnLocked = findViewById(R.id.rBtnLocked);
         db = FirebaseFirestore.getInstance();
 
         String userId = getIntent().getStringExtra("userId");
         loadUserProfile(userId);
+
+        Calendar calendar = Calendar.getInstance();
+        selectedYear = calendar.get(Calendar.YEAR);
+        selectedMonth = calendar.get(Calendar.MONTH);
+        selectedDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+        et_birthday.setOnClickListener(v -> {
+            showDateDialog();
+        });
+
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
 
         btnSave.setOnClickListener(v -> {
             profile_image.setDrawingCacheEnabled(true); // Bật cache
@@ -73,6 +102,19 @@ public class EditUserActivity extends AppCompatActivity {
         });
 
         btnCapture.setOnClickListener(v -> showImagePickerDialog());
+
+        radioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            String selectedOption;
+
+            // Determine the selected option
+            if (checkedId == R.id.rBtnNormal) {
+                selectedOption = "Normal";
+            } else if (checkedId == R.id.rBtnLocked) {
+                selectedOption = "Locked";
+            } else {
+                selectedOption = "";
+            }
+        });
     }
     private void showImagePickerDialog() {
         String[] options = {"Chụp ảnh", "Chọn từ thư viện"};
@@ -88,6 +130,17 @@ public class EditUserActivity extends AppCompatActivity {
                     }
                 })
                 .show();
+    }
+
+    private void showDateDialog() {
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+            selectedYear = year;
+            selectedMonth = month;
+            selectedDay = dayOfMonth;
+            selectedDate = dayOfMonth + "/" + (month + 1) + "/" + year;
+            et_birthday.setText(selectedDate);
+        }, selectedYear, selectedMonth, selectedDay);
+        datePickerDialog.show();
     }
 
     @Override
@@ -152,7 +205,7 @@ public class EditUserActivity extends AppCompatActivity {
         String birthday = et_birthday.getText().toString();
         String email = et_email.getText().toString();
         String phone = et_phone.getText().toString();
-        String status = et_status.getText().toString();
+        String status = selectedOption;
 
         // Chuyển đổi ảnh đại diện thành chuỗi Base64
         String profileImageBase64 = encodeImageToBase64(profileBitmap);

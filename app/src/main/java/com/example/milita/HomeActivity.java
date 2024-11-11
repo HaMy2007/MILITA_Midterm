@@ -85,7 +85,7 @@ public class HomeActivity extends AppCompatActivity {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             String userId = document.getId(); // Lấy ID từ Firestore
                             String username = document.getString("username");
-                            String birthday = document.getString("birthday");
+                            String role = document.getString("role");
                             String status = document.getString("status");
                             String profileImageBase64 = document.getString("profileImageBase64");
 
@@ -97,7 +97,7 @@ public class HomeActivity extends AppCompatActivity {
                             }
 
                             // Tạo đối tượng User và truyền Bitmap vào nếu có
-                            User user = new User(username, birthday, status, profileImageBitmap);
+                            User user = new User(username, role, status, profileImageBitmap);
                             user.setUserId(userId); // Lưu userId
                             userList.add(user);
                         }

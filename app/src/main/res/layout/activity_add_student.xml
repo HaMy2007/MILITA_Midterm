@@ -127,6 +127,7 @@
                 android:layout_height="wrap_content"
                 android:hint="Enter birthday"
                 android:background="@null"
+                android:focusable="false"
                 android:layout_marginLeft="75dp"
                 android:textColorHint="@color/brown"
                 android:fontFamily="@font/itim"
