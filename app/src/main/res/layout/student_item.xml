@@ -23,7 +23,7 @@
                 android:layout_width="1dp"
                 android:layout_height="50dp"
                 android:background="#FAB3B3"
-                android:layout_toRightOf="@id/student_checkbox" />
+                android:layout_toRightOf="@id/chkCheckAll" />
 
             <RadioButton
                 android:id="@+id/student_radio_button"
@@ -35,7 +35,7 @@
                 android:layout_width="1dp"
                 android:layout_height="50dp"
                 android:background="#FAB3B3"
-                android:layout_toRightOf="@id/student_checkbox" />
+                android:layout_toRightOf="@id/chkCheckAll" />
 
         </LinearLayout>
 
