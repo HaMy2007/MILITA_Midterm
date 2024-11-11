@@ -16,8 +16,6 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.bumptech.glide.Glide;
-import com.example.milita.R;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import de.hdodenhof.circleimageview.CircleImageView;
