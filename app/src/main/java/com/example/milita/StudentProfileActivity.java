@@ -24,7 +24,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class StudentProfileActivity extends AppCompatActivity {
     String avatarUrl;
-    Button btnSetting, btnBack;
+    Button btnSetting, btnBack, btnCertificate;
     CircleImageView avatar_user;
     TextView username, tv_name, tv_birthday, tv_email, tv_status, tv_phone, tv_studentId, tv_faculty;
     private FirebaseFirestore db;
@@ -50,10 +50,12 @@ public class StudentProfileActivity extends AppCompatActivity {
         tv_phone = findViewById(R.id.tv_phone);
         tv_studentId = findViewById(R.id.tv_studentId);
         tv_faculty = findViewById(R.id.tv_faculty);
+        btnCertificate = findViewById(R.id.btnCertificate);
 
         db = FirebaseFirestore.getInstance();
 
         String userId = getIntent().getStringExtra("id");
+        String role = getIntent().getStringExtra("role");
 
         loadUserProfile(userId);
 
@@ -69,7 +71,21 @@ public class StudentProfileActivity extends AppCompatActivity {
                 if(view.getId() == R.id.btnSetting) {
                     Intent intent = new Intent(StudentProfileActivity.this, EditStudentActivity.class);
                     intent.putExtra("userId", userId);
+                    intent.putExtra("role", role);
                     startActivityForResult(intent, 4);
+                }
+            }
+        });
+
+        btnCertificate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(view.getId() == R.id.btnCertificate) {
+                    Intent intent = new Intent(StudentProfileActivity.this, CertificateManagementActivity.class);
+                    intent.putExtra("userId", userId);
+                    intent.putExtra("role", role);
+                    intent.putExtra("studentId", tv_studentId.getText().toString());
+                    startActivityForResult(intent, 5);
                 }
             }
         });

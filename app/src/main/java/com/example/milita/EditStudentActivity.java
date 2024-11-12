@@ -71,6 +71,17 @@ public class EditStudentActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         String userId = getIntent().getStringExtra("userId");
+        String role = getIntent().getStringExtra("role");
+        if ("Employee".equals(role)) {
+            // Ẩn các chức năng mà nhân viên không thể làm
+            et_username.setEnabled(false);
+            et_birthday.setEnabled(false);
+            et_email.setEnabled(false);
+            et_phone.setEnabled(false);
+            et_status.setEnabled(false);
+            et_class.setEnabled(false);
+            et_faculty.setEnabled(false);
+        }
         loadUserProfile(userId);
 
         Calendar calendar = Calendar.getInstance();

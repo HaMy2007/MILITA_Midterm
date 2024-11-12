@@ -128,6 +128,7 @@ public class HomeActivity extends AppCompatActivity {
                         // Nếu người dùng xác nhận xóa, gọi phương thức xóa các mục đã chọn và xóa trong Firestore
                         userAdapter.removeSelectedItems(db); // Truyền db vào
                         Toast.makeText(HomeActivity.this, "Các mục đã được xóa.", Toast.LENGTH_SHORT).show();
+                        chkCheckAll.setChecked(false);
                     }
                 })
                 .setNegativeButton("Hủy", null)  // Nếu người dùng hủy, không làm gì

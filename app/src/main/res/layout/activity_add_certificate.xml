@@ -65,7 +65,41 @@
                     android:layout_marginEnd="10dp"
                     android:layout_marginBottom="25dp"/>
             </RelativeLayout>
-
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="20dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <ImageView
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:background="@drawable/certificate"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:text="Certificate Name"
+                    android:fontFamily="@font/itim"
+                    android:textSize="22sp"
+                    android:textColor="@color/brown"/>
+            </LinearLayout>
+            <EditText
+                android:id="@+id/et_cername"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter certificate name"
+                android:background="@null"
+                android:layout_marginLeft="75dp"
+                android:textColorHint="@color/brown"
+                android:fontFamily="@font/itim"
+                android:textSize="20sp"/>
+            <View
+                android:layout_width="300dp"
+                android:layout_height="1dp"
+                android:background="@color/brown"
+                android:layout_marginLeft="75dp" />
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -81,7 +115,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20dp"
-                    android:text="Name"
+                    android:text="Student Name"
                     android:fontFamily="@font/itim"
                     android:textSize="22sp"
                     android:textColor="@color/brown"/>
@@ -92,111 +126,7 @@
                 android:layout_height="wrap_content"
                 android:hint="Enter student name"
                 android:background="@null"
-                android:layout_marginLeft="75dp"
-                android:textColorHint="@color/brown"
-                android:fontFamily="@font/itim"
-                android:textSize="17sp"/>
-            <View
-                android:layout_width="300dp"
-                android:layout_height="1dp"
-                android:background="@color/brown"
-                android:layout_marginLeft="75dp" />
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="20dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-                <ImageView
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:background="@drawable/birthday"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dp"
-                    android:text="Birthday"
-                    android:fontFamily="@font/itim"
-                    android:textSize="22sp"
-                    android:textColor="@color/brown"/>
-            </LinearLayout>
-            <EditText
-                android:id="@+id/et_birthday"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Enter birthday"
-                android:background="@null"
-                android:layout_marginLeft="75dp"
-                android:textColorHint="@color/brown"
-                android:fontFamily="@font/itim"
-                android:textSize="17sp"/>
-            <View
-                android:layout_width="300dp"
-                android:layout_height="1dp"
-                android:background="@color/brown"
-                android:layout_marginLeft="75dp" />
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="20dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-                <ImageView
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:background="@drawable/email"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dp"
-                    android:text="Email"
-                    android:fontFamily="@font/itim"
-                    android:textSize="22sp"
-                    android:textColor="@color/brown"/>
-            </LinearLayout>
-            <EditText
-                android:id="@+id/et_email"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Enter email"
-                android:background="@null"
-                android:layout_marginLeft="75dp"
-                android:textColorHint="@color/brown"
-                android:fontFamily="@font/itim"
-                android:textSize="17sp"/>
-            <View
-                android:layout_width="300dp"
-                android:layout_height="1dp"
-                android:background="@color/brown"
-                android:layout_marginLeft="75dp" />
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="20dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-                <ImageView
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:background="@drawable/phone"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dp"
-                    android:text="Phone"
-                    android:fontFamily="@font/itim"
-                    android:textSize="22sp"
-                    android:textColor="@color/brown"/>
-            </LinearLayout>
-            <EditText
-                android:id="@+id/et_phone"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Enter phone number"
-                android:background="@null"
+                android:enabled="false"
                 android:layout_marginLeft="75dp"
                 android:textColorHint="@color/brown"
                 android:fontFamily="@font/itim"
@@ -227,10 +157,81 @@
                     android:textColor="@color/brown"/>
             </LinearLayout>
             <EditText
-                android:id="@+id/et_status"
+                android:id="@+id/et_studentId"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Enter student ID"
+                android:background="@null"
+                android:enabled="false"
+                android:layout_marginLeft="75dp"
+                android:textColorHint="@color/brown"
+                android:fontFamily="@font/itim"
+                android:textSize="17sp"/>
+            <View
+                android:layout_width="300dp"
+                android:layout_height="1dp"
+                android:background="@color/brown"
+                android:layout_marginLeft="75dp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="20dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <ImageView
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:background="@drawable/birthday"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:text="Session"
+                    android:fontFamily="@font/itim"
+                    android:textSize="22sp"
+                    android:textColor="@color/brown"/>
+            </LinearLayout>
+            <EditText
+                android:id="@+id/et_session"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter session"
+                android:background="@null"
+                android:layout_marginLeft="75dp"
+                android:textColorHint="@color/brown"
+                android:fontFamily="@font/itim"
+                android:textSize="17sp"/>
+            <View
+                android:layout_width="300dp"
+                android:layout_height="1dp"
+                android:background="@color/brown"
+                android:layout_marginLeft="75dp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="20dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <ImageView
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:background="@drawable/email"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:text="Organization"
+                    android:fontFamily="@font/itim"
+                    android:textSize="22sp"
+                    android:textColor="@color/brown"/>
+            </LinearLayout>
+            <EditText
+                android:id="@+id/et_origanization"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter organization"
                 android:background="@null"
                 android:layout_marginLeft="75dp"
                 android:textColorHint="@color/brown"
@@ -256,16 +257,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20dp"
-                    android:text="Class"
+                    android:text="Description"
                     android:fontFamily="@font/itim"
                     android:textSize="22sp"
                     android:textColor="@color/brown"/>
             </LinearLayout>
             <EditText
-                android:id="@+id/et_role"
+                android:id="@+id/et_des"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Enter class"
+                android:hint="Enter description"
                 android:background="@null"
                 android:layout_marginLeft="75dp"
                 android:textColorHint="@color/brown"
@@ -291,16 +292,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20dp"
-                    android:text="Faculty"
+                    android:text="School"
                     android:fontFamily="@font/itim"
                     android:textSize="22sp"
                     android:textColor="@color/brown"/>
             </LinearLayout>
             <EditText
-                android:id="@+id/et_faculty"
+                android:id="@+id/et_school"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Enter faculty"
+                android:hint="Enter school"
                 android:background="@null"
                 android:layout_marginLeft="75dp"
                 android:textColorHint="@color/brown"
@@ -312,12 +313,12 @@
                 android:background="@color/brown"
                 android:layout_marginLeft="75dp" />
             <Button
-                android:id="@+id/btnAddStu"
+                android:id="@+id/btnSave"
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="20dp"
-                android:text="Create student"
+                android:text="Add certificate"
                 android:fontFamily="@font/itim"
                 android:textSize="25sp"
                 android:textAllCaps="false"

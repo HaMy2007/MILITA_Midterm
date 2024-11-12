@@ -68,62 +68,66 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void loginUser(String email, String password) {
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        // Đăng nhập thành công, lấy thông tin người dùng
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
-
-                        // Điều hướng tới trang chính hoặc một màn hình khác
-                        startActivity(new Intent(MainActivity.this, StudentManagementActivity.class));
-                        finish();
-                    } else {
-                        // Thông báo lỗi nếu đăng nhập thất bại
-                        Toast.makeText(MainActivity.this, "Authentication Failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-//    login phan quyen
 //    private void loginUser(String email, String password) {
 //        mAuth.signInWithEmailAndPassword(email, password)
 //                .addOnCompleteListener(this, task -> {
 //                    if (task.isSuccessful()) {
+//                        // Đăng nhập thành công, lấy thông tin người dùng
 //                        FirebaseUser user = mAuth.getCurrentUser();
-//                        String userId = user.getUid();
-//                        FirebaseFirestore db = FirebaseFirestore.getInstance();
+//                        Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
 //
-//                        // Lấy vai trò người dùng từ Firestore
-//                        db.collection("users").document(userId).get()
-//                                .addOnCompleteListener(task1 -> {
-//                                    if (task1.isSuccessful()) {
-//                                        DocumentSnapshot document = task1.getResult();
-//                                        if (document.exists()) {
-//                                            String role = document.getString("role");
-//
-//                                            // Lưu vai trò người dùng và chuyển hướng
-//                                            if ("Admin".equals(role)) {
-//                                                startActivity(new Intent(MainActivity.this, HomeActivity.class));
-//                                            } else if ("Manager".equals(role)) {
-//                                                startActivity(new Intent(MainActivity.this, StudentManagementActivity.class));
-//                                            } else if ("Employee".equals(role)) {
-//                                                startActivity(new Intent(MainActivity.this, StudentManagementActivity.class));
-//                                            }
-//                                            finish();
-//                                        } else {
-//                                            Toast.makeText(MainActivity.this, "ko login dc", Toast.LENGTH_SHORT).show();
-//                                        }
-//                                    } else {
-//                                        Toast.makeText(MainActivity.this, "Error getting user role", Toast.LENGTH_SHORT).show();
-//                                    }
-//                                });
+//                        // Điều hướng tới trang chính hoặc một màn hình khác
+//                        startActivity(new Intent(MainActivity.this, HomeActivity.class));
+//                        finish();
 //                    } else {
+//                        // Thông báo lỗi nếu đăng nhập thất bại
 //                        Toast.makeText(MainActivity.this, "Authentication Failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
 //                    }
 //                });
 //    }
+
+//    login phan quyen
+    private void loginUser(String email, String password) {
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        String userId = user.getUid();
+                        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+                        // Lấy vai trò người dùng từ Firestore
+                        db.collection("users").document(userId).get()
+                                .addOnCompleteListener(task1 -> {
+                                    if (task1.isSuccessful()) {
+                                        DocumentSnapshot document = task1.getResult();
+                                        if (document.exists()) {
+                                            String role = document.getString("role");
+
+                                            // Lưu vai trò người dùng và chuyển hướng
+                                            if ("Admin".equals(role)) {
+                                                startActivity(new Intent(MainActivity.this, HomeActivity.class));
+                                            } else if ("Manager".equals(role)) {
+                                                Intent intent = new Intent(MainActivity.this, StudentManagementActivity.class);
+                                                intent.putExtra("role", role);
+                                                startActivity(intent);
+                                            } else if ("Employee".equals(role)) {
+                                                Intent intent = new Intent(MainActivity.this, StudentManagementActivity.class);
+                                                intent.putExtra("role", role);
+                                                startActivity(intent);
+                                            }
+                                            finish();
+                                        } else {
+                                            Toast.makeText(MainActivity.this, "ko login dc", Toast.LENGTH_SHORT).show();
+                                        }
+                                    } else {
+                                        Toast.makeText(MainActivity.this, "Error getting user role", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    } else {
+                        Toast.makeText(MainActivity.this, "Authentication Failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
 
 
     @Override

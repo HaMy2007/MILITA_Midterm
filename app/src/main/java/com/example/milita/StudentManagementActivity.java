@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -25,10 +26,16 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class StudentManagementActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_ADD_STUDENT = 10;
@@ -36,7 +43,7 @@ public class StudentManagementActivity extends AppCompatActivity {
     private StudentAdapter studentAdapter;
     private List<Student> studentList;
     private CheckBox[] checkBoxes;
-    private Button btnDelete, btnAdd, btnFilter;
+    private Button btnDelete, btnAdd, btnFilter, btnInputList;
     private CheckBox chkCheckAll;
     private FirebaseFirestore db;
     private EditText search_input;
@@ -54,24 +61,24 @@ public class StudentManagementActivity extends AppCompatActivity {
 
         btnDelete = findViewById(R.id.btnDelete);
         btnAdd = findViewById(R.id.btnAdd);
+        btnInputList = findViewById(R.id.btnInputList);
         chkCheckAll = findViewById(R.id.chkCheckAll);
         btnFilter = findViewById(R.id.btnFilter);
         search_input = findViewById(R.id.search_input);
-
+        String role = getIntent().getStringExtra("role");
         studentList = new ArrayList<>();
-        studentAdapter = new StudentAdapter(this, studentList);
+        studentAdapter = new StudentAdapter(this, studentList, role);
         studentRecyclerView.setAdapter(studentAdapter);
         //check quyền ng dùng
-        checkUserRole();
-        // Lấy dữ liệu từ Firestore
-        loadStudentDataFromFirestore();
-
-        if ("Employee".equals(userRole)) {
+        if ("Employee".equals(role)) {
+            // Ẩn các chức năng mà nhân viên không thể làm
             btnAdd.setVisibility(View.GONE);
             btnDelete.setVisibility(View.GONE);
             chkCheckAll.setVisibility(View.GONE);
             Toast.makeText(this, "Employee role: View-only access", Toast.LENGTH_SHORT).show();
         }
+        // Lấy dữ liệu từ Firestore
+        loadStudentDataFromFirestore();
 
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -128,20 +135,14 @@ public class StudentManagementActivity extends AppCompatActivity {
                 filterStudentList(query);
             }
         });
-    }
 
-    private void checkUserRole() {
-        // Fetch the role of the current user from Firestore or another source
-        // Example:
-        db.collection("users").document(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        userRole = documentSnapshot.getString("role"); // Assuming 'role' is a field in Firestore
-                    } else {
-                        userRole = "Employee"; // Default to Employee if not specified
-                    }
-                });
+        btnInputList.setOnClickListener(view -> {
+            // Mở trình chọn tệp để người dùng chọn tệp danh sách học viên
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("text/*"); // Chọn loại tệp văn bản
+            startActivityForResult(intent, 1);
+        });
+
     }
 
     private void loadStudentDataFromFirestore() {
@@ -243,6 +244,14 @@ public class StudentManagementActivity extends AppCompatActivity {
         if (requestCode == 3 && resultCode == RESULT_OK) {
             loadStudentDataFromFirestore();
         }
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            if (data != null) {
+                Uri fileUri = data.getData();
+                if (fileUri != null) {
+                    importStudentListFromFile(fileUri);
+                }
+            }
+        }
     }
 
     private void filterStudentList(String query) {
@@ -258,6 +267,67 @@ public class StudentManagementActivity extends AppCompatActivity {
 
         studentAdapter.updateList(filteredList);
     }
+
+    private void importStudentListFromFile(Uri fileUri) {
+        try {
+            InputStream inputStream = getContentResolver().openInputStream(fileUri);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            String line;
+            List<Student> studentsToAdd = new ArrayList<>();
+
+            while ((line = reader.readLine()) != null) {
+                String[] data = line.split(","); // Tách các trường dữ liệu dựa trên dấu phẩy
+                if (data.length >= 3) {
+                    String studentId = data[0].trim();
+                    String name = data[1].trim();
+                    String studentClass = data[2].trim();
+                    String profileImageBase64 = data.length > 3 ? data[3].trim() : "";
+                    Bitmap profileImageBitmap = null;
+                    if (profileImageBase64 != null && !profileImageBase64.isEmpty()) {
+                        byte[] decodedString = Base64.decode(profileImageBase64, Base64.DEFAULT);
+                        profileImageBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                    }
+                    // Tạo đối tượng Student
+                    Student student = new Student(studentId, name, studentClass, profileImageBitmap);
+                    studentsToAdd.add(student);
+                }
+            }
+
+            reader.close();
+
+            // Sau khi đọc xong tất cả các học viên, gọi phương thức để lưu vào Firestore
+            addStudentsToFirestore(studentsToAdd);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Lỗi khi đọc tệp", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void addStudentsToFirestore(List<Student> students) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        for (Student student : students) {
+            // Tạo dữ liệu học viên dưới dạng Map để lưu vào Firestore
+            Map<String, Object> studentData = new HashMap<>();
+            studentData.put("id", student.getId());
+            studentData.put("name", student.getName());
+            studentData.put("class", student.getStudentClass());
+            studentData.put("profileImageBase64", student.getProfileImage());
+
+            // Thêm học viên vào bộ sưu tập "students"
+            db.collection("students")
+                    .add(studentData)
+                    .addOnSuccessListener(documentReference -> {
+                        Toast.makeText(this, "Học viên đã được thêm vào Firestore", Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Lỗi khi thêm học viên vào Firestore", Toast.LENGTH_SHORT).show();
+                    });
+        }
+    }
+
+
 
 
 }

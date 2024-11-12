@@ -21,10 +21,12 @@ import java.util.List;
 public class StudentAdapter extends RecyclerView.Adapter<StudentAdapter.StudentViewHolder> {
     private Context context;
     private List<Student> studentList;
+    private String roleCurrentUser;
     private List<Boolean> selectedItems = new ArrayList<>();
 
-    public StudentAdapter(Context context, List<Student> studentList) {
+    public StudentAdapter(Context context, List<Student> studentList, String roleCurrentUser) {
         this.context = context;
+        this.roleCurrentUser = roleCurrentUser;
         this.studentList = studentList != null ? studentList : new ArrayList<>();
 
         // Khởi tạo danh sách `selectedItems` với giá trị `false` cho mỗi phần tử trong `studentList`
@@ -72,6 +74,7 @@ public class StudentAdapter extends RecyclerView.Adapter<StudentAdapter.StudentV
         holder.tvSeeMore.setOnClickListener(v -> {
             Intent intent = new Intent(context, StudentProfileActivity.class);
             intent.putExtra("id", student.getId());
+            intent.putExtra("role", roleCurrentUser);
             context.startActivity(intent);
         });
     }

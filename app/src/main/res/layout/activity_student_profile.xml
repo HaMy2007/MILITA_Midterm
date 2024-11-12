@@ -308,6 +308,7 @@
                     android:layout_height="35dp"
                     android:background="@drawable/certificate"/>
                 <Button
+                    android:id="@+id/btnCertificate"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20dp"

@@ -19,6 +19,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.ByteArrayOutputStream;
@@ -119,34 +120,44 @@ public class AddUserActivity extends AppCompatActivity {
         String email = txtEmail.getText().toString();
         String phone = txtPhone.getText().toString();
         String status = selectedOption;
-
-        // Chuyển đổi ảnh đại diện thành chuỗi Base64
         String profileImageBase64 = encodeImageToBase64(profileImageBitmap);
 
-        // Tạo đối tượng user
-        Map<String, Object> user = new HashMap<>();
-        user.put("username", username);
-        user.put("birthday", birthday);
-        user.put("email", email);
-        user.put("phone", phone);
-        user.put("status", status);
-        user.put("role", selectedRole);
-        user.put("profileImageBase64", profileImageBase64); // Lưu chuỗi Base64 của ảnh đại diện
+        // Tạo mật khẩu từ phần trước dấu @ của email
+        String password = email.split("@")[0];
 
-        // Thêm dữ liệu vào Firestore
-        db.collection("users").add(user)
-                .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(this, "User saved successfully!", Toast.LENGTH_SHORT).show();
+        // Tạo tài khoản với Firebase Authentication
+        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        // Lấy ID của người dùng được tạo
+                        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-                    // Sau khi lưu thành công, quay lại trang Home
-                    Intent resultIntent = new Intent();
-                    setResult(RESULT_OK, resultIntent); // Trả kết quả về Home activity
-                    finish(); // Quay lại màn hình Home
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Error saving user: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        // Tạo đối tượng user
+                        Map<String, Object> user = new HashMap<>();
+                        user.put("username", username);
+                        user.put("birthday", birthday);
+                        user.put("email", email);
+                        user.put("phone", phone);
+                        user.put("status", status);
+                        user.put("role", selectedRole);
+                        user.put("profileImageBase64", profileImageBase64);
+
+                        // Lưu user vào Firestore
+                        db.collection("users").document(userId).set(user)
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(this, "User and account created successfully!", Toast.LENGTH_SHORT).show();
+                                    setResult(RESULT_OK);
+                                    finish();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(this, "Error saving user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                });
+                    } else {
+                        Toast.makeText(this, "Authentication failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                    }
                 });
     }
+
 
 
     public String encodeImageToBase64(Bitmap bitmap) {
