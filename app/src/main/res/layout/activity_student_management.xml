@@ -141,7 +141,7 @@
     <LinearLayout
         android:id="@+id/menu_layout"
         android:layout_width="match_parent"
-        android:layout_height="70dp"
+        android:layout_height="60dp"
         android:background="@color/white"
         android:orientation="horizontal">
 

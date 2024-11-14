@@ -19,24 +19,26 @@
             android:orientation="vertical">
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="80dp"
                 android:orientation="horizontal"
-                android:layout_marginTop="20dp">
+                android:background="#FFEBEB">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Home"
+                    android:text="User management"
                     android:fontFamily="@font/itim"
-                    android:textSize="40sp"
-                    android:layout_marginLeft="20dp"
+                    android:textSize="33sp"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="15dp"
                     android:textColor="@color/red_text"
                     android:layout_weight="1"/>
 
                 <ImageView
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:src="@drawable/img_3"
+                    android:layout_gravity="center"
                     android:layout_marginRight="20dp"/>
             </LinearLayout>
 
@@ -54,7 +56,7 @@
                     android:text="Add user"
                     android:fontFamily="@font/itim"
                     android:textColor="@color/white"
-                    android:textSize="17sp"
+                    android:textSize="20sp"
                     android:textAllCaps="false"
                     android:layout_marginRight="30dp"
                     android:background="@drawable/radius_btn_2"/>
@@ -67,15 +69,15 @@
                     android:textAllCaps="false"
                     android:fontFamily="@font/itim"
                     android:textColor="@color/red_text"
-                    android:textSize="17sp"
+                    android:textSize="20sp"
                     android:background="@drawable/radius_btn_1"/>
             </LinearLayout>
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:layout_marginTop="20dp">
+                android:layout_marginLeft="15dp"
+                android:layout_marginTop="10dp">
                 <CheckBox
                     android:id="@+id/chkCheckAll"
                     android:layout_width="wrap_content"
@@ -100,22 +102,18 @@
                     android:fontFamily="@font/itim"
                     android:layout_toRightOf="@id/view"/>
             </RelativeLayout>
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="30dp"
-                android:src="@drawable/line"
-                android:layout_marginLeft="15dp"/>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/userRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginHorizontal="10dp"
                 android:background="@color/pale_pink"/>
         </LinearLayout>
     </ScrollView>
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="70dp"
+        android:layout_height="60dp"
         android:background="@color/white"
         android:orientation="horizontal">
 
