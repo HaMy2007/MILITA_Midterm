@@ -57,19 +57,13 @@ public class UserProfileActivity extends AppCompatActivity {
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                finish();
-            }
-        });
-
-        btnLogout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(view.getId() == R.id.btnLogout) {
-                    Intent intent = new Intent(UserProfileActivity.this, AddUserActivity.class);
+                if(view.getId() == R.id.btnBack) {
+                    Intent intent = new Intent(UserProfileActivity.this, HomeActivity.class);
                     startActivity(intent);
                 }
             }
         });
+
         btnSetting.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

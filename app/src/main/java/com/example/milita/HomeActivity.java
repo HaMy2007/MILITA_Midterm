@@ -10,6 +10,7 @@ import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -29,7 +30,7 @@ public class HomeActivity extends AppCompatActivity {
     private UserAdapter userAdapter;
     private List<User> userList;
     private CheckBox[] checkBoxes;
-    private Button btnDelete, btnAdd;
+    private Button btnDelete, btnAdd, btnListStudent, btnHome, btnProfile;
     private CheckBox chkCheckAll;
     private FirebaseFirestore db;
 
@@ -45,6 +46,10 @@ public class HomeActivity extends AppCompatActivity {
 
         btnDelete = findViewById(R.id.btnDelete);
         btnAdd = findViewById(R.id.btnAdd);
+        btnListStudent = findViewById(R.id.btnListStudent);
+        btnHome = findViewById(R.id.btnHome);
+        btnProfile = findViewById(R.id.btnProfile);
+//        btnMore = findViewById(R.id.btnMore);
         chkCheckAll = findViewById(R.id.chkCheckAll);
 
         userList = new ArrayList<>();
@@ -53,6 +58,28 @@ public class HomeActivity extends AppCompatActivity {
 
         // Lấy dữ liệu từ Firestore
         loadUserDataFromFirestore();
+
+        btnListStudent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(HomeActivity.this, StudentManagementActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        btnHome.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(HomeActivity.this, "Currently on the home page", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnProfile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(HomeActivity.this, "You are Admin", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,9 +92,14 @@ public class HomeActivity extends AppCompatActivity {
         btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showDeleteConfirmationDialog();
+                if (userAdapter.getSelectedItemsCount() > 0) {
+                    showDeleteConfirmationDialog();
+                } else {
+                    Toast.makeText(HomeActivity.this, "Please select at least one user to delete.", Toast.LENGTH_SHORT).show();
+                }
             }
         });
+
 
         chkCheckAll.setOnCheckedChangeListener((buttonView, isChecked) -> {
             userAdapter.selectAllItems(isChecked);

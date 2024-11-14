@@ -90,25 +90,33 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     }
 
     public void removeSelectedItems(FirebaseFirestore db) {
-        // Để tránh việc thay đổi danh sách khi đang lặp qua, lặp ngược từ cuối lên đầu
+        // Lặp ngược từ cuối lên đầu để tránh thay đổi danh sách trong quá trình xóa
         for (int i = selectedItems.size() - 1; i >= 0; i--) {
             if (selectedItems.get(i)) {
-                // Tạo một biến final để sử dụng trong lambda expression
                 final int index = i;  // Biến final cho chỉ số i
-                // Lấy ID người dùng từ Firestore, giả sử mỗi User có một trường "userId"
                 String userId = userList.get(index).getUserId();
 
-                // Xóa người dùng khỏi Firestore
+                // Xóa người dùng khỏi Firestore trong collection "users"
                 db.collection("users").document(userId)
                         .delete()
                         .addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
-                                // Xóa thành công từ Firestore
-                                userList.remove(index);
-                                selectedItems.remove(index);
-                                notifyItemRemoved(index);
+                                // Sau khi xóa trong "users", tiếp tục xóa tài khoản trong "accounts"
+                                db.collection("accounts").document(userId)
+                                        .delete()
+                                        .addOnCompleteListener(accountTask -> {
+                                            if (accountTask.isSuccessful()) {
+                                                // Nếu xóa thành công trong cả hai collection
+                                                userList.remove(index);
+                                                selectedItems.remove(index);
+                                                notifyItemRemoved(index);
+                                            } else {
+                                                // Nếu có lỗi khi xóa tài khoản trong "accounts"
+                                                Toast.makeText(context, "Lỗi khi xóa tài khoản người dùng trong Firestore", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
                             } else {
-                                // Nếu có lỗi khi xóa
+                                // Nếu có lỗi khi xóa người dùng trong "users"
                                 Toast.makeText(context, "Lỗi khi xóa người dùng từ Firestore", Toast.LENGTH_SHORT).show();
                             }
                         });
@@ -117,11 +125,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         notifyDataSetChanged(); // Cập nhật adapter sau khi xóa
     }
 
-    public void removeAllItems() {
-        userList.clear();
-        selectedItems.clear();
-        notifyDataSetChanged();
-    }
 
     // Cập nhật lại `selectedItems` nếu `userList` thay đổi
     private void updateSelectedItems() {
@@ -135,6 +138,17 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             }
         }
     }
+
+    public int getSelectedItemsCount() {
+        int count = 0;
+        for (boolean isSelected : selectedItems) {
+            if (isSelected) {
+                count++;
+            }
+        }
+        return count;
+    }
+
 
     public static class UserViewHolder extends RecyclerView.ViewHolder {
         ImageView imgAvt;

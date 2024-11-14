@@ -25,11 +25,14 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 
 import java.io.ByteArrayOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,10 +47,10 @@ public class EditUserActivity extends AppCompatActivity {
     private Button btnCapture, btnSave, btnBack;
     private TextView username;
     private CircleImageView profile_image;
-    private EditText et_username, et_birthday, et_email, et_phone, et_status;
+    private EditText et_username, et_birthday, et_email, et_phone;
     private RadioGroup radioGroup;
     private RadioButton rBtnNormal, rBtnLocked;
-    private String selectedOption;
+    private String selectedOption, userId;
     private String selectedDate = "";
     private int selectedYear, selectedMonth, selectedDay;
     @Override
@@ -75,8 +78,22 @@ public class EditUserActivity extends AppCompatActivity {
         rBtnLocked = findViewById(R.id.rBtnLocked);
         db = FirebaseFirestore.getInstance();
 
-        String userId = getIntent().getStringExtra("userId");
-        loadUserProfile(userId);
+        userId = getIntent().getStringExtra("userId");
+        String currentUserEmail = getIntent().getStringExtra("currentUserEmail");
+        String role = getIntent().getStringExtra("role");
+
+
+        if ("Employee".equals(role)) {
+            et_username.setEnabled(false);
+            et_birthday.setEnabled(false);
+            et_email.setEnabled(false);
+            et_phone.setEnabled(false);
+            rBtnNormal.setEnabled(false);
+            rBtnLocked.setEnabled(false);
+            loadUserProfileWithEmail(currentUserEmail);
+        } else {
+            loadUserProfile(userId);
+        }
 
         Calendar calendar = Calendar.getInstance();
         selectedYear = calendar.get(Calendar.YEAR);
@@ -104,8 +121,6 @@ public class EditUserActivity extends AppCompatActivity {
         btnCapture.setOnClickListener(v -> showImagePickerDialog());
 
         radioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            String selectedOption;
-
             // Determine the selected option
             if (checkedId == R.id.rBtnNormal) {
                 selectedOption = "Normal";
@@ -157,7 +172,8 @@ public class EditUserActivity extends AppCompatActivity {
                     profile_image.setImageURI(selectedImageUri);
                 } else {
                     Toast.makeText(this, "Lỗi khi chọn ảnh. Vui lòng thử lại!", Toast.LENGTH_SHORT).show();
-                }            }
+                }
+            }
         }
     }
 
@@ -184,7 +200,14 @@ public class EditUserActivity extends AppCompatActivity {
                         et_birthday.setText(birthday);
                         et_email.setText(email);
                         et_phone.setText(phone);
-                        et_status.setText(status);
+
+                        if ("Normal".equals(status)) {
+                            rBtnNormal.setChecked(true);
+                            selectedOption = "Normal"; // Update selectedOption
+                        } else if ("Locked".equals(status)) {
+                            rBtnLocked.setChecked(true);
+                            selectedOption = "Locked"; // Update selectedOption
+                        }
 
                         if (profileImageBase64 != null && !profileImageBase64.isEmpty()) {
                             byte[] decodedString = Base64.decode(profileImageBase64, Base64.DEFAULT);
@@ -200,6 +223,54 @@ public class EditUserActivity extends AppCompatActivity {
                 });
     }
 
+    private void loadUserProfileWithEmail(String userEmail) {
+        db.collection("users")
+                .whereEqualTo("email", userEmail)  // Truy vấn theo email
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        // Chỉ lấy tài liệu đầu tiên (nếu có nhiều tài liệu trùng với email)
+                        DocumentSnapshot documentSnapshot = queryDocumentSnapshots.getDocuments().get(0);
+                        userId = documentSnapshot.getId();
+                        String birthday = documentSnapshot.getString("birthday");
+                        String email = documentSnapshot.getString("email");
+                        String name = documentSnapshot.getString("username");
+                        String phone = documentSnapshot.getString("phone");
+                        String status = documentSnapshot.getString("status");
+                        String profileImageBase64 = documentSnapshot.getString("profileImageBase64");
+
+                        // Cập nhật các trường trong UI
+                        username.setText(name);
+                        et_username.setText(name);
+                        et_birthday.setText(birthday);
+                        et_email.setText(email);
+                        et_phone.setText(phone);
+
+                        // Cập nhật trạng thái người dùng
+                        if ("Normal".equals(status)) {
+                            rBtnNormal.setChecked(true);
+                            selectedOption = "Normal"; // Cập nhật lựa chọn
+                        } else if ("Locked".equals(status)) {
+                            rBtnLocked.setChecked(true);
+                            selectedOption = "Locked"; // Cập nhật lựa chọn
+                        }
+
+                        // Xử lý hình ảnh profile (nếu có)
+                        if (profileImageBase64 != null && !profileImageBase64.isEmpty()) {
+                            byte[] decodedString = Base64.decode(profileImageBase64, Base64.DEFAULT);
+                            Bitmap profileImageBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                            profile_image.setImageBitmap(profileImageBitmap);
+                        }
+                    } else {
+                        Log.d("FirestoreData", "Không tìm thấy tài liệu với email này.");
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirestoreData", "Lỗi khi lấy dữ liệu", e);
+                });
+    }
+
+
     private void UpdateUserData(String userId, Bitmap profileBitmap) {
         String username = et_username.getText().toString();
         String birthday = et_birthday.getText().toString();
@@ -207,38 +278,133 @@ public class EditUserActivity extends AppCompatActivity {
         String phone = et_phone.getText().toString();
         String status = selectedOption;
 
+        // Input validations
+        if (username.isEmpty()) {
+            et_username.setError("Please enter username");
+            et_username.requestFocus();
+            return;
+        }
+        if (birthday.isEmpty()) {
+            Toast.makeText(this, "Please enter birthday", Toast.LENGTH_SHORT).show();
+            et_birthday.requestFocus();
+            return;
+        } else {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                Date birthDate = sdf.parse(birthday);
+
+                Calendar calendar = Calendar.getInstance();
+                int currentYear = calendar.get(Calendar.YEAR);
+                int currentMonth = calendar.get(Calendar.MONTH);
+                int currentDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+                calendar.setTime(birthDate);
+                int birthYear = calendar.get(Calendar.YEAR);
+                int birthMonth = calendar.get(Calendar.MONTH);
+                int birthDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+                int age = currentYear - birthYear;
+
+                if (currentMonth < birthMonth || (currentMonth == birthMonth && currentDay < birthDay)) {
+                    age--;
+                }
+
+                if (age <= 5) {
+                    Toast.makeText(this, "Age must be greater than 5", Toast.LENGTH_SHORT).show();
+                    et_birthday.requestFocus();
+                    return;
+                }
+            } catch (Exception e) {
+                Toast.makeText(this, "Error birthday", Toast.LENGTH_SHORT).show();
+                et_birthday.requestFocus();
+                return;
+            }
+        }
+        if (email.isEmpty()) {
+            et_email.setError("Please enter email");
+            et_email.requestFocus();
+            return;
+        }
+
+        if (phone.isEmpty()) {
+            et_phone.setError("Please enter phone number");
+            et_phone.requestFocus();
+            return;
+        } else if (!phone.matches("\\d+")) {
+            et_phone.setError("Phone number must be only number");
+            et_phone.requestFocus();
+            return;
+        } else if (phone.length() != 10) {
+            et_phone.setError("Phone number must be 10 digits");
+            et_phone.requestFocus();
+            return;
+        }
+
+        if (status.isEmpty()) {
+            Toast.makeText(this, "Please choose status user", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (profileBitmap == null) {
+            Toast.makeText(this, "Please choose role user", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         // Chuyển đổi ảnh đại diện thành chuỗi Base64
         String profileImageBase64 = encodeImageToBase64(profileBitmap);
 
-        // Lấy tham chiếu tới document người dùng cần cập nhật
-        DocumentReference userRef = db.collection("users").document(userId);
+        // Check if the email already exists in the Firestore database
+        db.collection("users")
+                .whereEqualTo("email", email)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        // Email already exists, check if it's not the current user
+                        boolean emailExistsForAnotherUser = false;
+                        for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                            if (!documentSnapshot.getId().equals(userId)) {
+                                emailExistsForAnotherUser = true;
+                                break;
+                            }
+                        }
 
-        // Tạo map để lưu trữ các dữ liệu cần cập nhật
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("username", username);
-        userData.put("birthday", birthday);
-        userData.put("email", email);
-        userData.put("phone", phone);
-        userData.put("status", status);
-        if (profileImageBase64 != null) {
-            userData.put("profileImageBase64", profileImageBase64);
-        }
+                        if (emailExistsForAnotherUser) {
+                            et_email.setError("Email already exists");
+                            et_email.requestFocus();
+                            return;
+                        }
+                    }
 
-        // Cập nhật dữ liệu vào Firestore
-        userRef.update(userData)
-                .addOnSuccessListener(aVoid -> {
-                    // Thông báo cập nhật thành công
-                    Toast.makeText(this, "User data updated successfully!", Toast.LENGTH_SHORT).show();
-                    Intent resultIntent = new Intent();
-                    resultIntent.putExtra("userId", userId);
-                    setResult(RESULT_OK, resultIntent);
-                    finish();
+                    // If email is valid, proceed with updating the user data
+                    DocumentReference userRef = db.collection("users").document(userId);
+
+                    Map<String, Object> userData = new HashMap<>();
+                    userData.put("username", username);
+                    userData.put("birthday", birthday);
+                    userData.put("email", email);
+                    userData.put("phone", phone);
+                    userData.put("status", status);
+                    if (profileImageBase64 != null) {
+                        userData.put("profileImageBase64", profileImageBase64);
+                    }
+
+                    // Update user data in Firestore
+                    userRef.update(userData)
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(this, "User data updated successfully!", Toast.LENGTH_SHORT).show();
+                                Intent resultIntent = new Intent();
+                                resultIntent.putExtra("userId", userId);
+                                setResult(RESULT_OK, resultIntent);
+                                finish();
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(this, "Error updating user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            });
                 })
                 .addOnFailureListener(e -> {
-                    // Thông báo lỗi khi cập nhật
-                    Toast.makeText(this, "Error updating user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Error checking email existence: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
+
 
     public String encodeImageToBase64(Bitmap bitmap) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

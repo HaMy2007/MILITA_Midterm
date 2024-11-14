@@ -23,9 +23,12 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.ByteArrayOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -122,42 +125,149 @@ public class AddUserActivity extends AppCompatActivity {
         String status = selectedOption;
         String profileImageBase64 = encodeImageToBase64(profileImageBitmap);
 
-        // Tạo mật khẩu từ phần trước dấu @ của email
-        String password = email.split("@")[0];
+        // Kiểm tra các trường đầu vào
+        if (username.isEmpty()) {
+            txtUserName.setError("Please enter username");
+            txtUserName.requestFocus();
+            return;
+        }
+        if (birthday.isEmpty()) {
+            Toast.makeText(this, "Please enter birthday", Toast.LENGTH_SHORT).show();
+            txtBirthday.requestFocus();
+            return;
+        } else {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                Date birthDate = sdf.parse(birthday);
+                Calendar calendar = Calendar.getInstance();
+                int currentYear = calendar.get(Calendar.YEAR);
+                int currentMonth = calendar.get(Calendar.MONTH);
+                int currentDay = calendar.get(Calendar.DAY_OF_MONTH);
 
-        // Tạo tài khoản với Firebase Authentication
-        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        // Lấy ID của người dùng được tạo
-                        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                calendar.setTime(birthDate);
+                int birthYear = calendar.get(Calendar.YEAR);
+                int birthMonth = calendar.get(Calendar.MONTH);
+                int birthDay = calendar.get(Calendar.DAY_OF_MONTH);
 
-                        // Tạo đối tượng user
-                        Map<String, Object> user = new HashMap<>();
-                        user.put("username", username);
-                        user.put("birthday", birthday);
-                        user.put("email", email);
-                        user.put("phone", phone);
-                        user.put("status", status);
-                        user.put("role", selectedRole);
-                        user.put("profileImageBase64", profileImageBase64);
+                int age = currentYear - birthYear;
 
-                        // Lưu user vào Firestore
-                        db.collection("users").document(userId).set(user)
-                                .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(this, "User and account created successfully!", Toast.LENGTH_SHORT).show();
-                                    setResult(RESULT_OK);
-                                    finish();
-                                })
-                                .addOnFailureListener(e -> {
-                                    Toast.makeText(this, "Error saving user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                });
+                if (currentMonth < birthMonth || (currentMonth == birthMonth && currentDay < birthDay)) {
+                    age--;
+                }
+
+                if (age <= 5) {
+                    Toast.makeText(this, "Age must be greater than 5", Toast.LENGTH_SHORT).show();
+                    txtBirthday.requestFocus();
+                    return;
+                }
+            } catch (Exception e) {
+                Toast.makeText(this, "Error birthday", Toast.LENGTH_SHORT).show();
+                txtBirthday.requestFocus();
+                return;
+            }
+        }
+
+        if (email.isEmpty()) {
+            txtEmail.setError("Please enter email");
+            txtEmail.requestFocus();
+            return;
+        }
+
+        if (phone.isEmpty()) {
+            txtPhone.setError("Please enter phone number");
+            txtPhone.requestFocus();
+            return;
+        } else if (!phone.matches("\\d+")) {
+            txtPhone.setError("Phone number must be only number");
+            txtPhone.requestFocus();
+            return;
+        } else if (phone.length() != 10) {
+            txtPhone.setError("Phone number must be 10 digits");
+            txtPhone.requestFocus();
+            return;
+        }
+
+        if (status.isEmpty()) {
+            Toast.makeText(this, "Please choose status user", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (selectedRole.isEmpty()) {
+            Toast.makeText(this, "Please choose role user", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (profileImageBitmap == null) {
+            Toast.makeText(this, "Please choose avatar", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Kiểm tra xem email đã tồn tại trong Firestore chưa
+        checkEmailExists(email, exists -> {
+            if (exists) {
+                // Nếu email đã tồn tại, không lưu thông tin và thông báo cho người dùng
+                txtEmail.setError("Email already exists");
+                txtEmail.requestFocus();
+            } else {
+                // Nếu email chưa tồn tại, tiến hành lưu dữ liệu người dùng
+                String password = email.split("@")[0]; // Tạo mật khẩu từ phần trước dấu @ của email
+                String documentId = UUID.randomUUID().toString();
+
+                // Thông tin tài khoản cho bảng accounts
+                Map<String, Object> accountData = new HashMap<>();
+                accountData.put("email", email);
+                accountData.put("password", password);
+                accountData.put("role", selectedRole);
+
+                // Thông tin người dùng cho bảng users
+                Map<String, Object> userData = new HashMap<>();
+                userData.put("username", username);
+                userData.put("birthday", birthday);
+                userData.put("email", email);
+                userData.put("phone", phone);
+                userData.put("status", status);
+                userData.put("role", selectedRole);
+                userData.put("profileImageBase64", profileImageBase64);
+
+                // Lưu thông tin vào bảng accounts
+                db.collection("accounts").document(documentId).set(accountData)
+                        .addOnSuccessListener(aVoid -> {
+                            // Sau khi lưu tài khoản thành công, lưu tiếp thông tin người dùng với cùng documentId
+                            db.collection("users").document(documentId).set(userData)
+                                    .addOnSuccessListener(aVoid1 -> {
+                                        Toast.makeText(this, "User and account created successfully!", Toast.LENGTH_SHORT).show();
+                                        setResult(RESULT_OK);
+                                        finish();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Toast.makeText(this, "Error saving user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    });
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(this, "Error saving account data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        });
+            }
+        });
+    }
+
+    private void checkEmailExists(String email, OnEmailCheckListener listener) {
+        db.collection("accounts")
+                .whereEqualTo("email", email)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        listener.onCheckCompleted(true); // Email đã tồn tại
                     } else {
-                        Toast.makeText(this, "Authentication failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        listener.onCheckCompleted(false); // Email chưa tồn tại
                     }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getApplicationContext(), "Error checking email: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    listener.onCheckCompleted(false); // Nếu có lỗi, coi như email không hợp lệ
                 });
     }
 
+    public interface OnEmailCheckListener {
+        void onCheckCompleted(boolean isEmailExists);
+    }
 
 
     public String encodeImageToBase64(Bitmap bitmap) {

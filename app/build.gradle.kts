@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.milita"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -53,5 +53,10 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
     implementation ("com.google.firebase:firebase-storage:20.2.1")
+
+    implementation ("org.apache.poi:poi:5.2.3")
+    implementation ("org.apache.poi:poi-ooxml:5.2.3")
+    implementation ("com.opencsv:opencsv:5.6")
+
 
 }

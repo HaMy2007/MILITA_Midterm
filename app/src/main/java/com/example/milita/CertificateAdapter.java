@@ -23,12 +23,13 @@ public class CertificateAdapter extends RecyclerView.Adapter<CertificateAdapter.
     private Context context;
     private List<Certificate> certificateList;
     private String roleCurrentUser;
-    private String studentId;
+    private String studentId, currentUserEmail;
     private List<Boolean> selectedItems = new ArrayList<>();
 
-    public CertificateAdapter(Context context, List<Certificate> certificateList, String roleCurrentUser, String studentId) {
+    public CertificateAdapter(Context context, List<Certificate> certificateList, String roleCurrentUser, String studentId, String currentUserEmail) {
         this.context = context;
         this.roleCurrentUser = roleCurrentUser;
+        this.currentUserEmail = currentUserEmail;
         this.studentId = studentId;
         this.certificateList = certificateList != null ? certificateList : new ArrayList<>();
 
@@ -79,6 +80,7 @@ public class CertificateAdapter extends RecyclerView.Adapter<CertificateAdapter.
             intent.putExtra("id", certificate.getId());
             intent.putExtra("role", roleCurrentUser);
             intent.putExtra("studentId", studentId);
+            intent.putExtra("currentUserEmail", currentUserEmail);
             context.startActivity(intent);
         });
     }
@@ -97,55 +99,56 @@ public class CertificateAdapter extends RecyclerView.Adapter<CertificateAdapter.
     }
 
     public void removeSelectedItems(FirebaseFirestore db, String studentId) {
+        List<Integer> itemsToRemove = new ArrayList<>();
+        List<String> idsToRemove = new ArrayList<>();
+
+        // Vòng for đầu tiên: Thu thập các chỉ số và cerId của các mục cần xóa
         for (int i = selectedItems.size() - 1; i >= 0; i--) {
             if (selectedItems.get(i)) {
-                final int index = i;
-                String cerId = certificateList.get(index).getId();  // Lấy cerId của chứng chỉ muốn xóa
-
-                // Truy vấn tài liệu sinh viên theo studentId
-                db.collection("students")
-                        .whereEqualTo("id", studentId)  // Truy vấn theo thuộc tính studentId
-                        .get()
-                        .addOnCompleteListener(task -> {
-                            if (task.isSuccessful() && !task.getResult().isEmpty()) {
-                                // Lấy tài liệu sinh viên đầu tiên tìm được
-                                String studentDocId = task.getResult().getDocuments().get(0).getId();
-
-                                // Truy vấn subcollection "certificates" của sinh viên đó để tìm chứng chỉ với cerId tương ứng
-                                db.collection("students")
-                                        .document(studentDocId)
-                                        .collection("certificates")
-                                        .document(cerId)  // Dùng cerId làm ID của tài liệu chứng chỉ
-                                        .get()
-                                        .addOnCompleteListener(certTask -> {
-                                            if (certTask.isSuccessful() && certTask.getResult() != null) {
-                                                // Nếu tài liệu chứng chỉ tồn tại, tiến hành xóa
-                                                db.collection("students")
-                                                        .document(studentDocId)
-                                                        .collection("certificates")
-                                                        .document(cerId)
-                                                        .delete()
-                                                        .addOnCompleteListener(deleteTask -> {
-                                                            if (deleteTask.isSuccessful()) {
-                                                                certificateList.remove(index);
-                                                                selectedItems.remove(index);
-                                                                notifyItemRemoved(index);
-                                                            } else {
-                                                                Toast.makeText(context, "Lỗi khi xóa chứng chỉ", Toast.LENGTH_SHORT).show();
-                                                            }
-                                                        });
-                                            } else {
-                                                Toast.makeText(context, "Không tìm thấy chứng chỉ với cerId: " + cerId, Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
-                            } else {
-                                Toast.makeText(context, "Không tìm thấy sinh viên với studentId: " + studentId, Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                itemsToRemove.add(i);
+                idsToRemove.add(certificateList.get(i).getId());  // Lấy cerId của chứng chỉ muốn xóa
             }
         }
+
+        // Vòng for thứ hai: Xóa các mục khỏi Firestore
+        for (String cerId : idsToRemove) {
+            // Truy vấn tài liệu sinh viên theo studentId
+            db.collection("students")
+                    .whereEqualTo("id", studentId)
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful() && !task.getResult().isEmpty()) {
+                            // Lấy tài liệu sinh viên đầu tiên tìm được
+                            String studentDocId = task.getResult().getDocuments().get(0).getId();
+
+                            // Truy vấn subcollection "certificates" của sinh viên để xóa tài liệu với cerId
+                            db.collection("students")
+                                    .document(studentDocId)
+                                    .collection("certificates")
+                                    .document(cerId)
+                                    .delete()
+                                    .addOnCompleteListener(deleteTask -> {
+                                        if (!deleteTask.isSuccessful()) {
+                                            Toast.makeText(context, "Lỗi khi xóa chứng chỉ với cerId: " + cerId, Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        } else {
+                            Toast.makeText(context, "Không tìm thấy sinh viên với studentId: " + studentId, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        }
+
+        // Vòng for thứ ba: Xóa các mục khỏi certificateList và selectedItems cục bộ
+        for (int index : itemsToRemove) {
+            certificateList.remove(index);
+            selectedItems.remove(index);
+            notifyItemRemoved(index);
+        }
+
+        // Cập nhật RecyclerView sau khi xóa
         notifyDataSetChanged();
     }
+
 
     public void removeAllItems() {
         certificateList.clear();
@@ -164,6 +167,16 @@ public class CertificateAdapter extends RecyclerView.Adapter<CertificateAdapter.
                 selectedItems.remove(selectedItems.size() - 1);
             }
         }
+    }
+
+    public int getSelectedItemsCount() {
+        int count = 0;
+        for (boolean isSelected : selectedItems) {
+            if (isSelected) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public static class CertificateViewHolder extends RecyclerView.ViewHolder {

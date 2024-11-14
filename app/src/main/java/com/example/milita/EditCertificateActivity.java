@@ -73,14 +73,6 @@ public class EditCertificateActivity extends AppCompatActivity {
         studentId = getIntent().getStringExtra("studentId");
         cerId = getIntent().getStringExtra("id");
 
-        if ("Employee".equals(role)) {
-            // Ẩn các chức năng mà nhân viên không thể làm
-            et_cername.setEnabled(false);
-            et_session.setEnabled(false);
-            et_organization.setEnabled(false);
-            et_school.setEnabled(false);
-            et_description.setEnabled(false);
-        }
         loadCertificateById();
 
         Calendar calendar = Calendar.getInstance();
@@ -217,6 +209,42 @@ public class EditCertificateActivity extends AppCompatActivity {
         String organization = et_organization.getText().toString();
         String school = et_school.getText().toString();
         String description = et_description.getText().toString();
+
+        if (cername.isEmpty()) {
+            et_cername.setError("Please enter cername");
+            et_cername.requestFocus();
+            return;
+        }
+
+        if (session.isEmpty()) {
+            Toast.makeText(this, "Please select a birthday", Toast.LENGTH_SHORT).show();
+            et_session.requestFocus();
+            return;
+        }
+
+        if (organization.isEmpty()) {
+            et_organization.setError("Please enter organization");
+            et_organization.requestFocus();
+            return;
+        }
+
+        if (description.isEmpty()) {
+            et_description.setError("Please enter description");
+            et_description.requestFocus();
+            return;
+        }
+
+        if (school.isEmpty()) {
+            et_school.setError("Please enter school");
+            et_school.requestFocus();
+            return;
+        }
+
+        // Kiểm tra nếu ảnh chưa được chọn
+        if (profileBitmap == null) {
+            Toast.makeText(this, "Vui lòng chọn ảnh", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         // Convert the profile image to a Base64 string
         String profileImageBase64 = encodeImageToBase64(profileBitmap);

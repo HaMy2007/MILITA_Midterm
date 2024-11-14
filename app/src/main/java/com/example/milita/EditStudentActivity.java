@@ -27,7 +27,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 
 import java.io.ByteArrayOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -209,7 +211,91 @@ public class EditStudentActivity extends AppCompatActivity {
         String phone = et_phone.getText().toString();
         String id = et_status.getText().toString();
         String studentClass = et_class.getText().toString();
-        String falculty = et_faculty.getText().toString();
+        String faculty = et_faculty.getText().toString();
+
+        if (username.isEmpty()) {
+            et_username.setError("Please enter username");
+            et_username.requestFocus();
+            return;
+        }
+        if (birthday.isEmpty()) {
+            Toast.makeText(this, "Please enter birthday", Toast.LENGTH_SHORT).show();
+            et_birthday.requestFocus();
+            return;
+        } else {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                Date birthDate = sdf.parse(birthday);
+                Calendar calendar = Calendar.getInstance();
+                int currentYear = calendar.get(Calendar.YEAR);
+                int currentMonth = calendar.get(Calendar.MONTH);
+                int currentDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+                calendar.setTime(birthDate);
+                int birthYear = calendar.get(Calendar.YEAR);
+                int birthMonth = calendar.get(Calendar.MONTH);
+                int birthDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+                int age = currentYear - birthYear;
+
+                if (currentMonth < birthMonth || (currentMonth == birthMonth && currentDay < birthDay)) {
+                    age--;
+                }
+
+                if (age <= 5) {
+                    Toast.makeText(this, "Age must be greater than 5", Toast.LENGTH_SHORT).show();
+                    et_birthday.requestFocus();
+                    return;
+                }
+            } catch (Exception e) {
+                Toast.makeText(this, "Error birthday", Toast.LENGTH_SHORT).show();
+                et_birthday.requestFocus();
+                return;
+            }
+        }
+        if (email.isEmpty()) {
+            et_email.setError("Please enter email");
+            et_email.requestFocus();
+            return;
+        }
+        if (phone.isEmpty()) {
+            et_phone.setError("Please enter phone number");
+            et_phone.requestFocus();
+            return;
+        } else if (!phone.matches("\\d+")) {
+            et_phone.setError("Phone number must be only number");
+            et_phone.requestFocus();
+            return;
+        } else if (phone.length() != 10) {
+            et_phone.setError("Phone number must be 10 digits");
+            et_phone.requestFocus();
+            return;
+        }
+
+        if (id.isEmpty()) {
+            et_status.setError("Please enter studentId");
+            et_status.requestFocus();
+            return;
+        } else if (!id.matches("\\d+")) { // Kiểm tra nếu không phải là số
+            et_status.setError("StudentId must contain only numbers");
+            et_status.requestFocus();
+            return;
+        }
+
+        if (studentClass.isEmpty()) {
+            et_class.setError("Please enter studentClass");
+            et_class.requestFocus();
+            return;
+        }
+        if (faculty.isEmpty()) {
+            et_faculty.setError("Please enter email");
+            et_faculty.requestFocus();
+            return;
+        }
+        if (profileBitmap == null) {
+            Toast.makeText(this, "Please capture or select a profile image", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         // Chuyển đổi ảnh đại diện thành chuỗi Base64
         String profileImageBase64 = encodeImageToBase64(profileBitmap);
@@ -222,7 +308,7 @@ public class EditStudentActivity extends AppCompatActivity {
         userData.put("phone", phone);
         userData.put("id", id);
         userData.put("class", studentClass);
-        userData.put("falculty", falculty);
+        userData.put("faculty", faculty);
         if (profileImageBase64 != null) {
             userData.put("profileImageBase64", profileImageBase64);
         }

@@ -12,13 +12,12 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 public class MainActivity extends AppCompatActivity {
-    private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
     private Button btnLogin;
     private EditText txtUserName, txtPassword;
     private boolean isPasswordVisible = false;
@@ -30,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         btnLogin = findViewById(R.id.btnLogin);
-        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
         txtUserName = findViewById(R.id.txtUserName);
         txtPassword = findViewById(R.id.txtPassword);
         btnHidenPass = findViewById(R.id.btnHidenPass);
@@ -42,9 +41,16 @@ public class MainActivity extends AppCompatActivity {
             if (username.isEmpty() || password.isEmpty()) {
                 Toast.makeText(MainActivity.this, "Please enter your username and password", Toast.LENGTH_SHORT).show();
             } else {
-                loginUser(username, password);
+                checkStatusAccount(username, isBlocked -> {
+                    if (isBlocked) {
+                        Toast.makeText(MainActivity.this, "Your account is blocked, please contact to admin open it!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        loginUser(username, password); // Gọi phương thức đăng nhập khi tài khoản không bị khóa
+                    }
+                });
             }
         });
+
 
         btnHidenPass.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,79 +71,73 @@ public class MainActivity extends AppCompatActivity {
                 txtPassword.setSelection(txtPassword.getText().length());
             }
         });
-
     }
 
-//    private void loginUser(String email, String password) {
-//        mAuth.signInWithEmailAndPassword(email, password)
-//                .addOnCompleteListener(this, task -> {
-//                    if (task.isSuccessful()) {
-//                        // Đăng nhập thành công, lấy thông tin người dùng
-//                        FirebaseUser user = mAuth.getCurrentUser();
-//                        Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
-//
-//                        // Điều hướng tới trang chính hoặc một màn hình khác
-//                        startActivity(new Intent(MainActivity.this, HomeActivity.class));
-//                        finish();
-//                    } else {
-//                        // Thông báo lỗi nếu đăng nhập thất bại
-//                        Toast.makeText(MainActivity.this, "Authentication Failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-//                    }
-//                });
-//    }
-
-//    login phan quyen
-    private void loginUser(String email, String password) {
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        String userId = user.getUid();
-                        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-                        // Lấy vai trò người dùng từ Firestore
-                        db.collection("users").document(userId).get()
-                                .addOnCompleteListener(task1 -> {
-                                    if (task1.isSuccessful()) {
-                                        DocumentSnapshot document = task1.getResult();
-                                        if (document.exists()) {
-                                            String role = document.getString("role");
-
-                                            // Lưu vai trò người dùng và chuyển hướng
-                                            if ("Admin".equals(role)) {
-                                                startActivity(new Intent(MainActivity.this, HomeActivity.class));
-                                            } else if ("Manager".equals(role)) {
-                                                Intent intent = new Intent(MainActivity.this, StudentManagementActivity.class);
-                                                intent.putExtra("role", role);
-                                                startActivity(intent);
-                                            } else if ("Employee".equals(role)) {
-                                                Intent intent = new Intent(MainActivity.this, StudentManagementActivity.class);
-                                                intent.putExtra("role", role);
-                                                startActivity(intent);
-                                            }
-                                            finish();
-                                        } else {
-                                            Toast.makeText(MainActivity.this, "ko login dc", Toast.LENGTH_SHORT).show();
-                                        }
-                                    } else {
-                                        Toast.makeText(MainActivity.this, "Error getting user role", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                    } else {
-                        Toast.makeText(MainActivity.this, "Authentication Failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+    private void checkStatusAccount(String userEmail, final OnStatusCheckedListener listener) {
+        db.collection("users")
+                .whereEqualTo("email", userEmail)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    boolean isBlocked = false;
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        DocumentSnapshot documentSnapshot = queryDocumentSnapshots.getDocuments().get(0);
+                        String status = documentSnapshot.getString("status");
+                        if ("Locked".equals(status)) {
+                            isBlocked = true;
+                        }
                     }
+                    listener.onStatusChecked(isBlocked); // Trả kết quả cho callback
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(MainActivity.this, "Error check status", Toast.LENGTH_SHORT).show();
+                    listener.onStatusChecked(false); // Xử lý lỗi, mặc định cho phép đăng nhập
                 });
     }
 
+    // Interface callback
+    public interface OnStatusCheckedListener {
+        void onStatusChecked(boolean isBlocked);
+    }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        // Kiểm tra xem người dùng đã đăng nhập chưa, nếu có thì chuyển thẳng vào trang chính
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-            startActivity(new Intent(MainActivity.this, StudentManagementActivity.class));
-            finish();
-        }
+
+
+    private void loginUser(String email, String password) {
+        // Tìm tài khoản trong bảng accounts bằng email (email là thuộc tính, không phải documentId)
+        db.collection("accounts")
+                .whereEqualTo("email", email)  // Truy vấn tài liệu có thuộc tính "email" trùng khớp
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        QuerySnapshot querySnapshot = task.getResult();
+                        if (!querySnapshot.isEmpty()) {
+                            // Lấy tài liệu đầu tiên (nếu có nhiều tài liệu, bạn cần xử lý trường hợp này)
+                            DocumentSnapshot document = querySnapshot.getDocuments().get(0);
+                            String storedPassword = document.getString("password");
+                            String role = document.getString("role");
+
+                            if (storedPassword != null && storedPassword.equals(password)) {  // Kiểm tra mật khẩu
+                                // Đăng nhập thành công
+                                Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
+
+                                // Điều hướng dựa trên vai trò
+                                if ("Admin".equals(role)) {
+                                    startActivity(new Intent(MainActivity.this, HomeActivity.class));
+                                } else if ("Manager".equals(role) || "Employee".equals(role)) {
+                                    Intent intent = new Intent(MainActivity.this, StudentManagementActivity.class);
+                                    intent.putExtra("role", role);
+                                    intent.putExtra("currentUserEmail", email);
+                                    startActivity(intent);
+                                }
+                                finish();
+                            } else {
+                                Toast.makeText(MainActivity.this, "Incorrect password", Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Toast.makeText(MainActivity.this, "Account not found", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(MainActivity.this, "Error accessing account data: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }

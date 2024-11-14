@@ -113,6 +113,42 @@ public class AddCertificateActivity extends AppCompatActivity {
         String organization = et_origanization.getText().toString();
         String des = et_des.getText().toString();
         String school = et_school.getText().toString();
+
+        if (cername.isEmpty()) {
+            et_cername.setError("Please enter cername");
+            et_cername.requestFocus();
+            return;
+        }
+
+        if (session.isEmpty()) {
+            Toast.makeText(this, "Please select a birthday", Toast.LENGTH_SHORT).show();
+            et_session.requestFocus();
+            return;
+        }
+
+        if (organization.isEmpty()) {
+            et_origanization.setError("Please enter organization");
+            et_origanization.requestFocus();
+            return;
+        }
+
+        if (des.isEmpty()) {
+            et_des.setError("Please enter description");
+            et_des.requestFocus();
+            return;
+        }
+
+        if (school.isEmpty()) {
+            et_school.setError("Please enter school");
+            et_school.requestFocus();
+            return;
+        }
+
+        // Kiểm tra nếu ảnh chưa được chọn
+        if (profileImageBitmap == null) {
+            Toast.makeText(this, "Vui lòng chọn ảnh", Toast.LENGTH_SHORT).show();
+            return;
+        }
         String profileImageBase64 = encodeImageToBase64(profileImageBitmap);
 
         Map<String, Object> certificate = new HashMap<>();

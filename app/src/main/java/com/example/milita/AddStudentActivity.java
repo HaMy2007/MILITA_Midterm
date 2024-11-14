@@ -19,6 +19,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.ByteArrayOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,7 +33,7 @@ public class AddStudentActivity extends AppCompatActivity {
     private Uri selectedImageUri;
     private EditText txtStudentName, txtBirthday, txtEmail, txtPhone, txtStudentId, txtClass, txtFaculty;
     private FirebaseFirestore db;
-    private Button btnSave, btnCapture;
+    private Button btnSave, btnCapture, btnBack;
     private CircleImageView profileImageView;
     private String selectedDate = "";
     private int selectedYear, selectedMonth, selectedDay;
@@ -52,6 +55,14 @@ public class AddStudentActivity extends AppCompatActivity {
         btnSave = findViewById(R.id.btnSave);
         profileImageView = findViewById(R.id.profile_image);
         btnCapture = findViewById(R.id.btnCapture);
+        btnBack = findViewById(R.id.btnBack);
+
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
 
         btnSave.setOnClickListener(v -> {
             profileImageView.setDrawingCacheEnabled(true); // Bật cache
@@ -88,6 +99,91 @@ public class AddStudentActivity extends AppCompatActivity {
         String studentClass = txtClass.getText().toString();
         String faculty = txtFaculty.getText().toString();
 
+        if (studentName.isEmpty()) {
+            txtStudentName.setError("Please enter username");
+            txtStudentName.requestFocus();
+            return;
+        }
+        if (birthday.isEmpty()) {
+            Toast.makeText(this, "Please enter birthday", Toast.LENGTH_SHORT).show();
+            txtBirthday.requestFocus();
+            return;
+        } else {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                Date birthDate = sdf.parse(birthday);
+                Calendar calendar = Calendar.getInstance();
+                int currentYear = calendar.get(Calendar.YEAR);
+                int currentMonth = calendar.get(Calendar.MONTH);
+                int currentDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+                calendar.setTime(birthDate);
+                int birthYear = calendar.get(Calendar.YEAR);
+                int birthMonth = calendar.get(Calendar.MONTH);
+                int birthDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+                int age = currentYear - birthYear;
+
+                if (currentMonth < birthMonth || (currentMonth == birthMonth && currentDay < birthDay)) {
+                    age--;
+                }
+
+                if (age <= 5) {
+                    Toast.makeText(this, "Age must be greater than 5", Toast.LENGTH_SHORT).show();
+                    txtBirthday.requestFocus();
+                    return;
+                }
+            } catch (Exception e) {
+                Toast.makeText(this, "Error birthday", Toast.LENGTH_SHORT).show();
+                txtBirthday.requestFocus();
+                return;
+            }
+        }
+        if (email.isEmpty()) {
+            txtEmail.setError("Please enter email");
+            txtEmail.requestFocus();
+            return;
+        }
+
+        if (phone.isEmpty()) {
+            txtPhone.setError("Please enter phone number");
+            txtPhone.requestFocus();
+            return;
+        } else if (!phone.matches("\\d+")) {
+            txtPhone.setError("Phone number must be only number");
+            txtPhone.requestFocus();
+            return;
+        } else if (phone.length() != 10) {
+            txtPhone.setError("Phone number must be 10 digits");
+            txtPhone.requestFocus();
+            return;
+        }
+
+        if (studentId.isEmpty()) {
+            txtStudentId.setError("Please enter studentId");
+            txtStudentId.requestFocus();
+            return;
+        } else if (!studentId.matches("\\d+")) { // Kiểm tra nếu không phải là số
+            txtStudentId.setError("StudentId must contain only numbers");
+            txtStudentId.requestFocus();
+            return;
+        }
+
+        if (studentClass.isEmpty()) {
+            txtClass.setError("Please enter studentClass");
+            txtClass.requestFocus();
+            return;
+        }
+        if (faculty.isEmpty()) {
+            txtFaculty.setError("Please enter email");
+            txtFaculty.requestFocus();
+            return;
+        }
+        if (profileImageBitmap == null) {
+            Toast.makeText(this, "Please capture or select a profile image", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         // Chuyển đổi ảnh đại diện thành chuỗi Base64
         String profileImageBase64 = encodeImageToBase64(profileImageBitmap);
 
@@ -99,7 +195,7 @@ public class AddStudentActivity extends AppCompatActivity {
         student.put("phone", phone);
         student.put("id", studentId);
         student.put("class", studentClass);
-        student.put("falculty", faculty);
+        student.put("faculty", faculty);
         student.put("profileImageBase64", profileImageBase64); // Lưu chuỗi Base64 của ảnh đại diện
 
         // Thêm dữ liệu vào Firestore

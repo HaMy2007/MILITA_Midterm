@@ -56,13 +56,24 @@ public class StudentProfileActivity extends AppCompatActivity {
 
         String userId = getIntent().getStringExtra("id");
         String role = getIntent().getStringExtra("role");
-
+        String currentUserEmail = getIntent().getStringExtra("currentUserEmail");
         loadUserProfile(userId);
+
+        if ("Employee".equals(role)) {
+            // Ẩn các chức năng mà nhân viên không thể làm
+            btnSetting.setVisibility(View.GONE);
+        }
 
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                finish();
+                if(view.getId() == R.id.btnBack) {
+                    Intent intent = new Intent(StudentProfileActivity.this, StudentManagementActivity.class);
+                    intent.putExtra("role", role);
+                    intent.putExtra("userId", userId);
+                    intent.putExtra("currentUserEmail", currentUserEmail);
+                    startActivity(intent);
+                }
             }
         });
         btnSetting.setOnClickListener(new View.OnClickListener() {
@@ -84,7 +95,8 @@ public class StudentProfileActivity extends AppCompatActivity {
                     Intent intent = new Intent(StudentProfileActivity.this, CertificateManagementActivity.class);
                     intent.putExtra("userId", userId);
                     intent.putExtra("role", role);
-                    intent.putExtra("studentId", tv_studentId.getText().toString());
+                    intent.putExtra("studentId", tv_status.getText().toString());
+                    intent.putExtra("currentUserEmail", currentUserEmail);
                     startActivityForResult(intent, 5);
                 }
             }

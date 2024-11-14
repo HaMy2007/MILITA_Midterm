@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -49,13 +50,25 @@ public class CertificateInfomationActivity extends AppCompatActivity {
         String role = getIntent().getStringExtra("role");
         studentId = getIntent().getStringExtra("studentId");
         cerId = getIntent().getStringExtra("id");
+        String currentUserEmail = getIntent().getStringExtra("currentUserEmail");
+
 
         loadCertificateById();
 
+        if ("Employee".equals(role)) {
+            // Ẩn các chức năng mà nhân viên không thể làm
+            btnSetting.setVisibility(View.GONE);
+        }
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                finish();
+                if(view.getId() == R.id.btnLogout) {
+                    Intent intent = new Intent(CertificateInfomationActivity.this, CertificateManagementActivity.class);
+                    intent.putExtra("role", role);
+                    intent.putExtra("studentId", studentId);
+                    intent.putExtra("currentUserEmail", currentUserEmail);
+                    startActivity(intent);
+                }
             }
         });
 
