@@ -1,5 +1,6 @@
 package com.example.milita;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
@@ -21,12 +22,14 @@ import java.util.List;
 
 public class CertificateAdapter extends RecyclerView.Adapter<CertificateAdapter.CertificateViewHolder> {
     private Context context;
+    private Activity activity;
     private List<Certificate> certificateList;
     private String roleCurrentUser;
     private String studentId, currentUserEmail;
     private List<Boolean> selectedItems = new ArrayList<>();
 
-    public CertificateAdapter(Context context, List<Certificate> certificateList, String roleCurrentUser, String studentId, String currentUserEmail) {
+    public CertificateAdapter(Activity activity, Context context, List<Certificate> certificateList, String roleCurrentUser, String studentId, String currentUserEmail) {
+        this.activity = activity;
         this.context = context;
         this.roleCurrentUser = roleCurrentUser;
         this.currentUserEmail = currentUserEmail;
@@ -81,7 +84,7 @@ public class CertificateAdapter extends RecyclerView.Adapter<CertificateAdapter.
             intent.putExtra("role", roleCurrentUser);
             intent.putExtra("studentId", studentId);
             intent.putExtra("currentUserEmail", currentUserEmail);
-            context.startActivity(intent);
+            activity.startActivityForResult(intent, 20);
         });
     }
 

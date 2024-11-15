@@ -32,6 +32,7 @@
                     android:layout_gravity="center_vertical"
                     android:layout_marginLeft="15dp"/>
                 <Button
+                    android:id="@+id/btnLogout"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:layout_marginLeft="10dp"
@@ -141,35 +142,30 @@
     <LinearLayout
         android:id="@+id/menu_layout"
         android:layout_width="match_parent"
-        android:layout_height="70dp"
+        android:layout_height="50dp"
         android:background="@color/white"
+        android:gravity="center"
         android:orientation="horizontal">
 
         <Button
             android:id="@+id/btnListStudent"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="30dp"
-            android:layout_weight="1"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="50dp"
             android:background="@drawable/graduate" />
         <Button
             android:id="@+id/btnHome"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="1"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
             android:layout_marginLeft="100dp"
-            android:background="@drawable/home"
-            android:layout_gravity="center_vertical"/>
+            android:background="@drawable/home"/>
 
         <Button
             android:id="@+id/btnProfile"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_gravity="center_vertical"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
             android:layout_marginLeft="100dp"
             android:layout_marginRight="30dp"
-            android:layout_weight="1"
             android:background="@drawable/student" />
     </LinearLayout>
 </LinearLayout>

@@ -28,7 +28,7 @@ public class CertificateInfomationActivity extends AppCompatActivity {
     CircleImageView avatar_user;
     TextView username, tv_name, tv_session, tv_organization, tv_school, tv_des;
     private FirebaseFirestore db;
-    String studentId, cerId;
+    String studentId, cerId, studentName;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,6 +50,7 @@ public class CertificateInfomationActivity extends AppCompatActivity {
         String role = getIntent().getStringExtra("role");
         studentId = getIntent().getStringExtra("studentId");
         cerId = getIntent().getStringExtra("id");
+        studentName = getIntent().getStringExtra("studentName");
         String currentUserEmail = getIntent().getStringExtra("currentUserEmail");
 
 
@@ -62,12 +63,14 @@ public class CertificateInfomationActivity extends AppCompatActivity {
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(view.getId() == R.id.btnLogout) {
-                    Intent intent = new Intent(CertificateInfomationActivity.this, CertificateManagementActivity.class);
+                if(view.getId() == R.id.btnBack) {
+                    Intent intent = new Intent();
                     intent.putExtra("role", role);
                     intent.putExtra("studentId", studentId);
                     intent.putExtra("currentUserEmail", currentUserEmail);
-                    startActivity(intent);
+                    intent.putExtra("studentName", studentName);
+                    setResult(RESULT_OK, intent);
+                    finish();
                 }
             }
         });

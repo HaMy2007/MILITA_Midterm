@@ -178,7 +178,7 @@ public class EditStudentActivity extends AppCompatActivity {
                         String phone = documentSnapshot.getString("phone");
                         String id = documentSnapshot.getString("id");
                         String studentClass = documentSnapshot.getString("class");
-                        String falculty = documentSnapshot.getString("falculty");
+                        String faculty = documentSnapshot.getString("faculty");
                         String profileImageBase64 = documentSnapshot.getString("profileImageBase64");
 
                         username.setText(name);
@@ -188,7 +188,7 @@ public class EditStudentActivity extends AppCompatActivity {
                         et_phone.setText(phone);
                         et_status.setText(id);
                         et_class.setText(studentClass);
-                        et_faculty.setText(falculty);
+                        et_faculty.setText(faculty);
 
                         if (profileImageBase64 != null && !profileImageBase64.isEmpty()) {
                             byte[] decodedString = Base64.decode(profileImageBase64, Base64.DEFAULT);

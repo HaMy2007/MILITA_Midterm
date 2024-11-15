@@ -10,6 +10,7 @@ import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
@@ -33,6 +34,7 @@ public class HomeActivity extends AppCompatActivity {
     private Button btnDelete, btnAdd, btnListStudent, btnHome, btnProfile;
     private CheckBox chkCheckAll;
     private FirebaseFirestore db;
+    private ImageView logout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,9 +50,10 @@ public class HomeActivity extends AppCompatActivity {
         btnAdd = findViewById(R.id.btnAdd);
         btnListStudent = findViewById(R.id.btnListStudent);
         btnHome = findViewById(R.id.btnHome);
-        btnProfile = findViewById(R.id.btnProfile);
+//        btnProfile = findViewById(R.id.btnProfile);
 //        btnMore = findViewById(R.id.btnMore);
         chkCheckAll = findViewById(R.id.chkCheckAll);
+        logout = findViewById(R.id.logout);
 
         userList = new ArrayList<>();
         userAdapter = new UserAdapter(this, userList);
@@ -58,6 +61,15 @@ public class HomeActivity extends AppCompatActivity {
 
         // Lấy dữ liệu từ Firestore
         loadUserDataFromFirestore();
+
+        logout.setOnClickListener(v -> {
+            // Chuyển về màn hình đăng nhập (LoginActivity)
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            // Kết thúc Activity hiện tại
+            finish();
+        });
 
         btnListStudent.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -74,12 +86,12 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-        btnProfile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Toast.makeText(HomeActivity.this, "You are Admin", Toast.LENGTH_SHORT).show();
-            }
-        });
+//        btnProfile.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Toast.makeText(HomeActivity.this, "You are Admin", Toast.LENGTH_SHORT).show();
+//            }
+//        });
 
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override

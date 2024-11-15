@@ -68,7 +68,7 @@ public class StudentManagementActivity extends AppCompatActivity {
     private StudentAdapter studentAdapter;
     private List<Student> studentList;
     private CheckBox[] checkBoxes;
-    private Button btnDelete, btnAdd, btnFilter, btnMore, btnListStudent, btnHome, btnProfile;
+    private Button btnDelete, btnAdd, btnFilter, btnMore, btnListStudent, btnHome, btnProfile, btnLogout;
     private CheckBox chkCheckAll;
     private FirebaseFirestore db;
     private EditText search_input;
@@ -90,6 +90,7 @@ public class StudentManagementActivity extends AppCompatActivity {
         btnMore = findViewById(R.id.btnMore);
         btnListStudent = findViewById(R.id.btnListStudent);
         btnHome = findViewById(R.id.btnHome);
+        btnLogout = findViewById(R.id.btnLogout);
         btnProfile = findViewById(R.id.btnProfile);
         chkCheckAll = findViewById(R.id.chkCheckAll);
         btnFilter = findViewById(R.id.btnFilter);
@@ -111,8 +112,7 @@ public class StudentManagementActivity extends AppCompatActivity {
             btnHome.setVisibility(View.GONE);
             Toast.makeText(this, "Employee role: View-only access", Toast.LENGTH_SHORT).show();
         } else if ("Manager".equals(role)) {
-            btnHome.setVisibility(View.GONE);
-            btnProfile.setVisibility(View.GONE);
+            menu_layout.setVisibility(View.GONE);
         }
         // Lấy dữ liệu từ Firestore
         loadStudentDataFromFirestore();
@@ -129,6 +129,18 @@ public class StudentManagementActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(StudentManagementActivity.this, HomeActivity.class);
                 startActivity(intent);
+            }
+        });
+
+        btnLogout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(StudentManagementActivity.this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+
+                // Kết thúc Activity hiện tại
+                finish();
             }
         });
 

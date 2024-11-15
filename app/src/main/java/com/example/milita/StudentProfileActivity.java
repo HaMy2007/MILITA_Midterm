@@ -96,6 +96,7 @@ public class StudentProfileActivity extends AppCompatActivity {
                     intent.putExtra("userId", userId);
                     intent.putExtra("role", role);
                     intent.putExtra("studentId", tv_status.getText().toString());
+                    intent.putExtra("studentName", tv_name.getText().toString());
                     intent.putExtra("currentUserEmail", currentUserEmail);
                     startActivityForResult(intent, 5);
                 }
@@ -118,7 +119,7 @@ public class StudentProfileActivity extends AppCompatActivity {
                         String phone = documentSnapshot.getString("phone");
                         String id = documentSnapshot.getString("id");
                         String studentClass = documentSnapshot.getString("class");
-                        String falculty = documentSnapshot.getString("falculty");
+                        String faculty = documentSnapshot.getString("faculty");
                         String profileImageBase64 = documentSnapshot.getString("profileImageBase64");
 
                         username.setText(name);
@@ -128,7 +129,7 @@ public class StudentProfileActivity extends AppCompatActivity {
                         tv_phone.setText(phone);
                         tv_status.setText(id);
                         tv_studentId.setText(studentClass);
-                        tv_faculty.setText(falculty);
+                        tv_faculty.setText(faculty);
 
                         if (profileImageBase64 != null && !profileImageBase64.isEmpty()) {
                             byte[] decodedString = Base64.decode(profileImageBase64, Base64.DEFAULT);

@@ -25,6 +25,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -74,6 +75,9 @@ public class CertificateManagementActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private String studentId = "";
     private LinearLayout menu_layout;
+    private String studentName = "";
+    private String currentUserEmail = "";
+    private TextView stuName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,12 +98,14 @@ public class CertificateManagementActivity extends AppCompatActivity {
         btnProfile = findViewById(R.id.btnProfile);
         chkCheckAll = findViewById(R.id.chkCheckAll);
         menu_layout = findViewById(R.id.menu_layout);
+        stuName = findViewById(R.id.stuName);
         String role = getIntent().getStringExtra("role");
         studentId = getIntent().getStringExtra("userId");
-        String currentUserEmail = getIntent().getStringExtra("currentUserEmail");
+        currentUserEmail = getIntent().getStringExtra("currentUserEmail");
+        studentName = getIntent().getStringExtra("studentName");
 
         certificateList = new ArrayList<>();
-        certificateAdapter = new CertificateAdapter(this, certificateList, role, studentId, currentUserEmail);
+        certificateAdapter = new CertificateAdapter(this,this, certificateList, role, studentId, currentUserEmail);
         certificateRecyclerView.setAdapter(certificateAdapter);
         //check quyền ng dùng
         if ("Employee".equals(role)) {
@@ -254,6 +260,7 @@ public class CertificateManagementActivity extends AppCompatActivity {
     }
 
     private void loadCertificateDataFromFirestore() {
+        stuName.setText(studentName);
         // Tìm tài liệu sinh viên dựa trên studentId
         db.collection("students")
                 .whereEqualTo("id", studentId)
@@ -373,6 +380,9 @@ public class CertificateManagementActivity extends AppCompatActivity {
         }
 
         if (requestCode == 20 && resultCode == RESULT_OK) {
+            studentId = getIntent().getStringExtra("studentId");
+            currentUserEmail = getIntent().getStringExtra("currentUserEmail");
+            studentName = getIntent().getStringExtra("studentName");
             loadCertificateDataFromFirestore();
         }
     }
