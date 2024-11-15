@@ -19,16 +19,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class LoginHistoryActivity extends AppCompatActivity {
-    private static final int REQUEST_CODE_ADD_USER = 10;
-    private RecyclerView userRecyclerView;
-    private UserAdapterInLoginHistory userAdapter;
-    private List<User> userList;
+    private static final int REQUEST_CODE_ADD_loginHistory = 10;
+    private RecyclerView loginRecyclerView;
+    private UserAdapterInLoginHistory loginHistoryAdapter;
+    private List<LoginHistory> loginHistoryList;
     private Button btnListStudent, btnHome;
     private FirebaseFirestore db;
     private ImageView logout;
@@ -40,20 +41,20 @@ public class LoginHistoryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login_history);
 
         db = FirebaseFirestore.getInstance();
-        userRecyclerView = findViewById(R.id.userRecyclerView);
-        userRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        loginRecyclerView = findViewById(R.id.loginRecyclerView);
+        loginRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         logout = findViewById(R.id.logout);
         btnListStudent = findViewById(R.id.btnListStudent);
         btnHome = findViewById(R.id.btnHome);
 
 
-        userList = new ArrayList<>();
-        userAdapter = new UserAdapterInLoginHistory(this, userList);
-        userRecyclerView.setAdapter(userAdapter);
+        loginHistoryList = new ArrayList<>();
+        loginHistoryAdapter = new UserAdapterInLoginHistory(this, loginHistoryList);
+        loginRecyclerView.setAdapter(loginHistoryAdapter);
 
         // Lấy dữ liệu từ Firestore
-        loadUserDataFromFirestore();
+        loadloginHistoryDataFromFirestore();
 
         logout.setOnClickListener(v -> {
             // Chuyển về màn hình đăng nhập (LoginActivity)
@@ -79,28 +80,22 @@ public class LoginHistoryActivity extends AppCompatActivity {
             }
         });
 
-//        btnProfile.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Toast.makeText(HomeActivity.this, "You are Admin", Toast.LENGTH_SHORT).show();
-//            }
-//        });
-
     }
 
-    private void loadUserDataFromFirestore() {
+    private void loadloginHistoryDataFromFirestore() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        db.collection("users")
+        db.collection("LoginHistory")
+                .orderBy("loginTime", Query.Direction.DESCENDING) // Sắp xếp theo thời gian giảm dần
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        userList.clear();
+                        loginHistoryList.clear();
                         for (QueryDocumentSnapshot document : task.getResult()) {
-                            String userId = document.getId(); // Lấy ID từ Firestore
-                            String username = document.getString("username");
-                            String role = document.getString("role");
-                            String status = document.getString("status");
+                            String loginHistoryId = document.getId(); // Lấy ID từ Firestore
+                            String account = document.getString("email");
+                            String name = document.getString("username");
+                            String time = document.getString("loginTime");
                             String profileImageBase64 = document.getString("profileImageBase64");
 
                             // Chuyển Base64 thành Bitmap
@@ -110,30 +105,20 @@ public class LoginHistoryActivity extends AppCompatActivity {
                                 profileImageBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
                             }
 
-                            // Tạo đối tượng User và truyền Bitmap vào nếu có
-                            User user = new User(username, role, status, profileImageBitmap);
-                            user.setUserId(userId); // Lưu userId
-                            userList.add(user);
+                            // Tạo đối tượng loginHistory và truyền Bitmap vào nếu có
+                            LoginHistory loginHistory = new LoginHistory(account, name, time, profileImageBitmap);
+                            loginHistoryList.add(loginHistory);
                         }
 
                         // Kiểm tra nếu có dữ liệu trước khi cập nhật adapter
-                        if (!userList.isEmpty()) {
-                            userAdapter.notifyDataSetChanged();
+                        if (!loginHistoryList.isEmpty()) {
+                            loginHistoryAdapter.notifyDataSetChanged();
                         } else {
-                            Toast.makeText(this, "No user data found", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "No loginHistory data found", Toast.LENGTH_SHORT).show();
                         }
                     } else {
                         Toast.makeText(this, "Error fetching data: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK) {
-            loadUserDataFromFirestore();
-        }
-    }
-
 }

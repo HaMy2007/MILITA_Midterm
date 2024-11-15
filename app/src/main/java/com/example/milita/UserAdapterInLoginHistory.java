@@ -18,32 +18,32 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserAdapterInLoginHistory extends RecyclerView.Adapter<UserAdapterInLoginHistory.UserViewHolder> {
+public class UserAdapterInLoginHistory extends RecyclerView.Adapter<UserAdapterInLoginHistory.UserAdapterInLoginHistoryViewHolder> {
     private Context context;
-    private List<User> userList;
+    private List<LoginHistory> loginList;
 
-    public UserAdapterInLoginHistory(Context context, List<User> userList) {
+    public UserAdapterInLoginHistory(Context context, List<LoginHistory> loginList) {
         this.context = context;
-        this.userList = userList != null ? userList : new ArrayList<>();
+        this.loginList = loginList != null ? loginList : new ArrayList<>();
 
     }
 
     @NonNull
     @Override
-    public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public UserAdapterInLoginHistoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.user_item_in_login_history, parent, false);
-        return new UserViewHolder(view);
+        return new UserAdapterInLoginHistoryViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
-        User user = userList.get(position);
-        holder.tvUserName.setText(user.getName());
-        holder.tvRole.setText(user.getRole());
-        holder.tvStatus.setText(user.getStatus());
+    public void onBindViewHolder(@NonNull UserAdapterInLoginHistoryViewHolder holder, int position) {
+        LoginHistory loginHistory = loginList.get(position);
+        holder.tvAccount.setText(loginHistory.getAccount());
+        holder.tvName.setText(loginHistory.getName());
+        holder.tvTime.setText(loginHistory.getTime());
 
-        if (user.getProfileImage() != null) {
-            holder.imgAvt.setImageBitmap(user.getProfileImage());
+        if (loginHistory.getProfileImage() != null) {
+            holder.imgAvt.setImageBitmap(loginHistory.getProfileImage());
         } else {
             holder.imgAvt.setImageResource(R.drawable.avatar_error);
         }
@@ -52,22 +52,20 @@ public class UserAdapterInLoginHistory extends RecyclerView.Adapter<UserAdapterI
 
     @Override
     public int getItemCount() {
-        return userList != null ? userList.size() : 0;
+        return loginList != null ? loginList.size() : 0;
     }
 
 
-    public static class UserViewHolder extends RecyclerView.ViewHolder {
+    public static class UserAdapterInLoginHistoryViewHolder extends RecyclerView.ViewHolder {
         ImageView imgAvt;
-        TextView tvUserName, tvRole, tvStatus, tvSeeMore;
-        CheckBox checkBox;
+        TextView tvAccount, tvName, tvTime;
 
-        public UserViewHolder(@NonNull View itemView) {
+        public UserAdapterInLoginHistoryViewHolder(@NonNull View itemView) {
             super(itemView);
             imgAvt = itemView.findViewById(R.id.imgAvt);
-            tvUserName = itemView.findViewById(R.id.tvUserName);
-            tvRole = itemView.findViewById(R.id.tvRole);
-            tvStatus = itemView.findViewById(R.id.tvStatus);
-            tvSeeMore = itemView.findViewById(R.id.tvSeeMore);
+            tvAccount = itemView.findViewById(R.id.tvAccount);
+            tvName = itemView.findViewById(R.id.tvName);
+            tvTime = itemView.findViewById(R.id.tvTime);
         }
     }
 }
