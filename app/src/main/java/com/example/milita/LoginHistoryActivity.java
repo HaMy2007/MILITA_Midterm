@@ -11,7 +11,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -25,14 +24,12 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HomeActivity extends AppCompatActivity {
+public class LoginHistoryActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_ADD_USER = 10;
     private RecyclerView userRecyclerView;
-    private UserAdapter userAdapter;
+    private UserAdapterInLoginHistory userAdapter;
     private List<User> userList;
-    private CheckBox[] checkBoxes;
-    private Button btnDelete, btnAdd, btnListStudent, btnHome, btnProfile, btnHistory;
-    private CheckBox chkCheckAll;
+    private Button btnListStudent, btnHome;
     private FirebaseFirestore db;
     private ImageView logout;
 
@@ -40,22 +37,19 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_home);
+        setContentView(R.layout.activity_login_history);
 
         db = FirebaseFirestore.getInstance();
         userRecyclerView = findViewById(R.id.userRecyclerView);
         userRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        btnDelete = findViewById(R.id.btnDelete);
-        btnHistory = findViewById(R.id.btnHistory);
-        btnAdd = findViewById(R.id.btnAdd);
+        logout = findViewById(R.id.logout);
         btnListStudent = findViewById(R.id.btnListStudent);
         btnHome = findViewById(R.id.btnHome);
-        chkCheckAll = findViewById(R.id.chkCheckAll);
-        logout = findViewById(R.id.logout);
+
 
         userList = new ArrayList<>();
-        userAdapter = new UserAdapter(this, userList);
+        userAdapter = new UserAdapterInLoginHistory(this, userList);
         userRecyclerView.setAdapter(userAdapter);
 
         // Lấy dữ liệu từ Firestore
@@ -69,17 +63,11 @@ public class HomeActivity extends AppCompatActivity {
             // Kết thúc Activity hiện tại
             finish();
         });
-        btnHistory.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(HomeActivity.this, LoginHistoryActivity.class);
-                startActivity(intent);
-            }
-        });
+
         btnListStudent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(HomeActivity.this, StudentManagementActivity.class);
+                Intent intent = new Intent(LoginHistoryActivity.this, StudentManagementActivity.class);
                 startActivity(intent);
             }
         });
@@ -87,7 +75,7 @@ public class HomeActivity extends AppCompatActivity {
         btnHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(HomeActivity.this, "Currently on the home page", Toast.LENGTH_SHORT).show();
+                Toast.makeText(LoginHistoryActivity.this, "Currently on the home page", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -98,29 +86,6 @@ public class HomeActivity extends AppCompatActivity {
 //            }
 //        });
 
-        btnAdd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(HomeActivity.this, AddUserActivity.class);
-                startActivityForResult(intent, 1);
-            }
-        });
-
-        btnDelete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (userAdapter.getSelectedItemsCount() > 0) {
-                    showDeleteConfirmationDialog();
-                } else {
-                    Toast.makeText(HomeActivity.this, "Please select at least one user to delete.", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-
-        chkCheckAll.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            userAdapter.selectAllItems(isChecked);
-        });
     }
 
     private void loadUserDataFromFirestore() {
@@ -161,43 +126,6 @@ public class HomeActivity extends AppCompatActivity {
                         Toast.makeText(this, "Error fetching data: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
-    }
-
-
-
-    // Hiển thị dialog xác nhận trước khi xóa
-    private void showDeleteConfirmationDialog() {
-        // Tạo một AlertDialog để xác nhận hành động xóa
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Confirm delete")
-                .setMessage("Are you sure to delete users?")
-                .setCancelable(false)  // Không cho phép đóng dialog khi nhấn ngoài
-                .setPositiveButton("Xóa", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        // Nếu người dùng xác nhận xóa, gọi phương thức xóa các mục đã chọn và xóa trong Firestore
-                        userAdapter.removeSelectedItems(db); // Truyền db vào
-                        Toast.makeText(HomeActivity.this, "Các mục đã được xóa.", Toast.LENGTH_SHORT).show();
-                        chkCheckAll.setChecked(false);
-                    }
-                })
-                .setNegativeButton("Hủy", null)  // Nếu người dùng hủy, không làm gì
-                .create();
-
-        // Lấy ra các button của dialog
-        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(DialogInterface dialogInterface) {
-                // Lấy các button từ dialog
-                Button btnDelete = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
-                Button btnCancel = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_NEGATIVE);
-
-                btnDelete.setTextColor(getResources().getColor(R.color.blue)); // Màu xanh (thêm màu xanh vào resource)
-                btnCancel.setTextColor(getResources().getColor(R.color.red)); // Màu đỏ (thêm màu đỏ vào resource)
-            }
-        });
-
-        // Hiển thị dialog
-        dialog.show();
     }
 
     @Override

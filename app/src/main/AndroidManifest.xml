@@ -21,6 +21,9 @@
             android:name=".AddCertificateActivity"
             android:exported="false" />
         <activity
+            android:name=".LoginHistoryActivity"
+            android:exported="false" />
+        <activity
             android:name=".EditCertificateActivity"
             android:exported="false" />
         <activity
