@@ -227,14 +227,6 @@
                 android:layout_height="1dp"
                 android:background="@color/brown"
                 android:layout_marginLeft="75dp" />
-            <Button
-                android:id="@+id/btnLogout"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_gravity="center"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="20dp"
-                android:background="@drawable/logout"/>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
